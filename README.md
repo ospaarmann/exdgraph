@@ -11,7 +11,17 @@ ExDgraph is the attempt to create a gRPC based client for the Dgraph database.
 I am using [tony612/grpc-elixir](https://github.com/tony612/grpc-elixir) as Elixir gRPC implementation and [tony612/protobuf-elixir](https://github.com/tony612/protobuf-elixir) as pure Elixir implementation of [Google Protobuf](https://developers.google.com/protocol-buffers/).
 
 ## Roadmap
-**ToDo**
+
+[ ] Connect to Dgraph server via gRPC
+[ ] Model request
+[ ] Model response
+[ ] Query builder
+[ ] Query executer
+[ ] Mutation builder
+[ ] Mutation executer
+[ ] Operation builder (for Alter)
+[ ] Opation executer
+[ ] More intelligent query builder for nested queries
 
 ## Installation
 
