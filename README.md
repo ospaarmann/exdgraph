@@ -12,16 +12,16 @@ I am using [tony612/grpc-elixir](https://github.com/tony612/grpc-elixir) as Elix
 
 ## Roadmap
 
-[ ] Connect to Dgraph server via gRPC
-[ ] Model request
-[ ] Model response
-[ ] Query builder
-[ ] Query executer
-[ ] Mutation builder
-[ ] Mutation executer
-[ ] Operation builder (for Alter)
-[ ] Opation executer
-[ ] More intelligent query builder for nested queries
+- [ ] Connect to Dgraph server via gRPC
+- [ ] Model request
+- [ ] Model response
+- [ ] Query builder
+- [ ] Query executer
+- [ ] Mutation builder
+- [ ] Mutation executer
+- [ ] Operation builder (for Alter)
+- [ ] Opation executer
+- [ ] More intelligent query builder for nested queries
 
 ## Installation
 
