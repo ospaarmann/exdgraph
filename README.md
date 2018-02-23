@@ -2,7 +2,7 @@
 
 **This is work in progress and not functional as of now. If you want to help, please drop me a message. Any help is greatly appreciated!**
 
-ExDgraph is the attempt to create a gRPC based client for the Dgraph database.
+ExDgraph is the attempt to create a gRPC based client for the Dgraph database. WORK IN PROGRESS.
 
 - Read more on Dgraph here: https://docs.dgraph.io
 - Read more on gRPC here: https://grpc.io/docs/
