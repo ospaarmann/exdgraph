@@ -7,7 +7,9 @@ defmodule Exdgraph.MixProject do
       version: "0.1.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      description: description(),
+      package: package()
     ]
   end
 
@@ -23,6 +25,21 @@ defmodule Exdgraph.MixProject do
     [
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
+    ]
+  end
+
+  defp description do
+    """
+    ExDgraph is the attempt to create a gRPC based client for the Dgraph database. WORK IN PROGRESS.
+    """
+  end
+
+  defp package do
+    [
+      files: ["lib", "mix.exs", "README*", "LICENSE*"],
+      maintainers: ["Ole Spaarmann"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/ospaarmann/exdgraph"}
     ]
   end
 end
