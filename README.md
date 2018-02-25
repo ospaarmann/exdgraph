@@ -1,4 +1,4 @@
-# ExDgraph
+# ExDgraph [![Build Status](https://travis-ci.org/ospaarmann/exdgraph.svg?branch=master)](https://travis-ci.org/ospaarmann/exdgraph)
 
 **This is work in progress and not functional as of now. If you want to help, please drop me a message. Any help is greatly appreciated!**
 
