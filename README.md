@@ -61,7 +61,8 @@ Poison.decode!(msg.json)
 
 ## Roadmap
 
-- [ ] Connect to Dgraph server via gRPC
+- [X] Connect to Dgraph server via gRPC
+- [ ] Let GenServer handle connection and queries
 - [ ] Model request
 - [ ] Model response
 - [ ] Query builder
@@ -69,5 +70,6 @@ Poison.decode!(msg.json)
 - [ ] Mutation builder
 - [ ] Mutation executer
 - [ ] Operation builder (for Alter)
-- [ ] Opation executer
+- [ ] Operation executer
+- [ ] Poolboy for connection pooling
 - [ ] More intelligent query builder for nested queries
