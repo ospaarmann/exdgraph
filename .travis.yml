@@ -50,8 +50,7 @@ before_install:
   # doing out-of-the-ordinary docker-compose builds.
   - docker-compose pull
   - docker-compose build
-  - docker-compose create
-  - docker-compose start
+  - docker-compose up -d
 
   # You will want this for logging. If one of your containers does not build for
   # whatever reason it's best to report that now before your tests start
