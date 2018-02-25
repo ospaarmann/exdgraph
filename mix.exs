@@ -25,7 +25,8 @@ defmodule Exdgraph.MixProject do
     [
       {:grpc, github: "tony612/grpc-elixir"},
       {:protobuf, "~> 0.5"},
-      {:poison, "~> 3.1"}
+      {:poison, "~> 3.1"},
+      {:ex_doc, "~> 0.16", only: :dev, runtime: false}
     ]
   end
 
