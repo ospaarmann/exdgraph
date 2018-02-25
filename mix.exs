@@ -9,7 +9,13 @@ defmodule Exdgraph.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: description(),
-      package: package()
+      package: package(),
+
+     # Docs
+     name: "Exdgraph",
+     source_url: "https://github.com/ospaarmann/exdgraph",
+     docs: [main: "Exdgraph", # The main page in the docs
+            extras: ["README.md"]]
     ]
   end
 
