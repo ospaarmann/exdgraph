@@ -1,8 +1,8 @@
-defmodule ExdgraphTest do
+defmodule ExDgraphTest do
   use ExUnit.Case
-  doctest Exdgraph
+  doctest ExDgraph
 
   test "greets the world" do
-    assert Exdgraph.hello() == :world
+    assert ExDgraph.hello() == :world
   end
 end

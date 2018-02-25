@@ -1,6 +1,6 @@
-defmodule Exdgraph do
+defmodule ExDgraph do
   @moduledoc """
-  Documentation for Exdgraph.
+  Documentation for ExDgraph.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule Exdgraph do
 
   ## Examples
 
-      iex> Exdgraph.hello
+      iex> ExDgraph.hello
       :world
 
   """

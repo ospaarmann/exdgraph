@@ -1,4 +1,4 @@
-defmodule Exdgraph.MixProject do
+defmodule ExDgraph.MixProject do
   use Mix.Project
 
   def project do
@@ -12,9 +12,9 @@ defmodule Exdgraph.MixProject do
       package: package(),
 
      # Docs
-     name: "Exdgraph",
+     name: "ExDgraph",
      source_url: "https://github.com/ospaarmann/exdgraph",
-     docs: [main: "Exdgraph", # The main page in the docs
+     docs: [main: "ExDgraph", # The main page in the docs
             extras: ["README.md"]]
     ]
   end
