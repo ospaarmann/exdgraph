@@ -31,7 +31,7 @@ Again, this is work in progress. I'll add more examples on how to use this on th
 
 Install ExDgraph and run an interactive console with `iex -S mix`.
 
-```
+```elixir
 # Connect to Server
 {:ok, channel} = GRPC.Stub.connect("localhost:9080")
 
