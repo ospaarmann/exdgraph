@@ -11,11 +11,11 @@ defmodule ExDgraph.MixProject do
       description: description(),
       package: package(),
 
-     # Docs
-     name: "ExDgraph",
-     source_url: "https://github.com/ospaarmann/exdgraph",
-     docs: [main: "ExDgraph", # The main page in the docs
-            extras: ["README.md"]]
+      # Docs
+      name: "ExDgraph",
+      source_url: "https://github.com/ospaarmann/exdgraph",
+      # The main page in the docs
+      docs: [main: "ExDgraph", extras: ["README.md"]]
     ]
   end
 
