@@ -1,0 +1,65 @@
+version: "2"
+services:
+  # Dgraph Production
+  zero1:
+    image: dgraph/dgraph:latest
+    volumes:
+      - /tmp/data1:/dgraph
+    ports:
+      - 6080:6080
+    restart: on-failure
+    command: dgraph zero --port_offset -2000 --my=zero1:5080
+  server1:
+    image: dgraph/dgraph:latest
+    volumes:
+      - /tmp/data1:/dgraph
+    ports:
+      - 8080:8080
+      - 9080:9080
+    restart: on-failure
+    command: dgraph server --my=server1:7080 --memory_mb=2048 --zero=zero1:5080
+  # Dgraph Developing
+  zerodev:
+    image: dgraph/dgraph:latest
+    volumes:
+      - /tmp/data2:/dgraph
+    ports:
+      - 6081:6081
+    restart: on-failure
+    command: dgraph zero --port_offset -1999 --my=zerodev:5081
+  serverdev:
+    image: dgraph/dgraph:latest
+    volumes:
+      - /tmp/data2:/dgraph
+    ports:
+      - 8081:8081
+      - 9081:9081
+    restart: on-failure
+    # -0 1 -> grpc 9080 + 1 = 9081 , hhtp 8080 + 1 = 8081
+    command: dgraph server --my=serverdev:7081 --memory_mb=2048 --zero=zerodev:5081 -o 1
+  # Dgraph Testing
+  zerotest:
+    image: dgraph/dgraph:latest
+    volumes:
+      - /tmp/data3:/dgraph
+    ports:
+      - 6082:6082
+    restart: on-failure
+    command: dgraph zero --port_offset -1998 --my=zerotest:5082
+  servertest:
+    image: dgraph/dgraph:latest
+    volumes:
+      - /tmp/data3:/dgraph
+    ports:
+      - 8082:8082
+      - 9082:9082
+    restart: on-failure
+    command: dgraph server --my=servertest:7082 --memory_mb=2048 --zero=zerotest:5082 -o 2
+  # Dgraph Web-GUI
+  ratel:
+    image: dgraph/dgraph:latest
+    volumes:
+      - /tmp/data:/dgraph
+    ports:
+      - 8088:8088
+    command: dgraph-ratel -port 8088
