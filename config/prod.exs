@@ -8,7 +8,8 @@ config :logger, level: :warn
 
 config :logger, :console,
   format: "💎  [$level] $date $time  $levelpad$message\n",
-  metadata: [:function, :my_id], # metadata: [:module, :function, :my_id],
+  # metadata: [:module, :function, :my_id],
+  metadata: [:function, :my_id],
   colors: [
     warn: IO.ANSI.color(172),
     info: IO.ANSI.color(229),
@@ -18,4 +19,5 @@ config :logger, :console,
 
 # Dgraph 
 config :exdgraph,
-  server: "http://localhost:8080"
+  dgraphServerHTTP: "http://localhost:8080",
+  dgraphServerGRPC: "http://localhost:9080"

@@ -9,7 +9,8 @@ config :logger, level: :debug
 # Logger.debug "💡 struct_name #{inspect struct_name}", [my_id: 1234]
 config :logger, :console,
   format: "🛡  $metadata$message\n",
-  metadata: [:function, :my_id], # metadata: [:module, :function, :my_id],
+  # metadata: [:module, :function, :my_id],
+  metadata: [:function, :my_id],
   colors: [
     warn: IO.ANSI.color(172),
     info: IO.ANSI.color(229),
@@ -19,4 +20,5 @@ config :logger, :console,
 
 # Dgraph
 config :exdgraph,
-  server: "http://localhost:8082" # 8082
+  dgraphServerHTTP: "http://localhost:8082",
+  dgraphServerGRPC: "localhost:9082"
