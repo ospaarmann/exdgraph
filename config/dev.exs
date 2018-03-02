@@ -18,6 +18,19 @@ config :logger, :console,
   ]
 
 # Dgraph 
+#
+# docker-compose(alternate) with 3 dgraph instances
+# dgraphServerGRPC: 
+#   test: "localhost:9082", 
+#   dev: "http://localhost:9081", 
+#   prod: "http://localhost:9080"
+#   dgraph-ratel -port 8088
+#
+# docker-compose with 1 dgraph instances
+# dgraphServerGRPC: 
+#   test,dev,prod: "localhost:9080", 
+#   dgraph-ratel -port 8080
+#
 config :exdgraph,
   dgraphServerHTTP: "http://localhost:8081",
   dgraphServerGRPC: "http://localhost:9081"
