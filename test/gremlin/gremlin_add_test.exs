@@ -94,13 +94,13 @@ defmodule GremlinAddTest do
       |> addV(Person)
       |> property("name", "Peter")
 
-    # g.addE('knows').from(marko).to(peter)
+    # gremlin> g.addE('knows').from(marko).to(peter)
     graph
     |> addE("knows")
     |> from(marko)
     |> to(peter)
 
-    # g.V(john).addE('knows').to(peter)
+    # gremlin> g.V(john).addE('knows').to(peter)
     edge =
       graph
       |> addV(Person)
@@ -131,5 +131,38 @@ defmodule GremlinAddTest do
     person_one = List.first(persons)
     assert "John" == person_one["name"]
     assert "Peter" == List.first(person_one["knows"])["name"]
+  end
+
+  test "Gremlin Vertex Step" do
+    {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
+    {:ok, graph} = Graph.new(channel)
+
+    edwin =
+      graph
+      |> addV(Person)
+      |> property("name", "Edwin")
+      
+    # Get all the vertices in the Graph (NOT IMPLEMENTED)
+    vertices =
+      graph
+      |> v()
+
+    assert [] == vertices
+    
+    # Get a vertex with the unique identifier of "1".
+    vertex =
+    graph
+    |> v(edwin.uid)
+
+    assert edwin.uid == vertex.uid
+    %{__struct__: match_struct} = vertex.vertex_struct
+    assert Person == match_struct
+    assert "Edwin" == vertex.vertex_struct.name
+
+    # Get the value of the name property on vertex with the unique identifier of uid.
+    vertex =
+    graph
+    |> v(edwin.uid)
+    |> values("name")
   end
 end

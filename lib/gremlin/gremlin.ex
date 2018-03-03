@@ -39,6 +39,24 @@ defmodule Gremlin do
   end
 
   @doc """
+  
+  """
+  def query_vertex(graph, vertex_uid) do
+    channel = graph.channel
+    query = """
+    { vertex(func: uid(#{vertex_uid})) { expand(_all_) } }
+    """
+    request = ExDgraph.Api.Request.new(query: query)
+    {:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
+    #Logger.info(fn -> "💡 msg.json: #{inspect msg.json}" end)
+    decoded_json = Poison.decode!(msg.json)
+    vertices = decoded_json["vertex"]
+    vertex_one = List.first(vertices)
+    for {key, val} <- vertex_one, into: %{}, do: {String.to_atom(key), val}
+  end
+
+
+  @doc """
   ## AddVertex Step
   The addV()-step is used to add vertices to the graph
   http://tinkerpop.apache.org/docs/current/reference/#addvertex-step
@@ -126,5 +144,56 @@ defmodule Gremlin do
       assigned = mutate_edge(edge.graph, edge.graph.vertex.uid, edge.predicate, to.uid)
     end
     %Edge{edge | to: to}
+  end
+
+  @doc """
+  V Step
+  
+  The vertex iterator for the graph. Utilize this to iterate through all the vertices in the graph. 
+  Use with care on large graphs unless used in combination with a key index lookup.
+
+  ### Get all the vertices in the Graph
+  gremlin> g.V()
+
+  ### Get a vertex with the unique identifier of "1".
+  gremlin> g.V(1)
+
+  ### Get the value of the name property on vertex with the unique identifier of "1".
+  gremlin> g.V(1).values('name')
+
+  ### 
+  """
+  @spec v(Graph) :: List
+  def v(graph) do
+    # TODO: implement
+    []
+  end
+
+  @doc """
+  Get a vertex with the unique identifier.
+
+  Returns a `Vertex`. The `Graph` with a channel and a `uid` are needed.
+
+  ## Examples
+  
+      {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
+      {:ok, graph} = Graph.new(channel)
+      graph
+  
+  """
+  @spec v(Graph, String) :: Vertex
+  def v(graph, uid) do
+    vertex = query_vertex(graph, uid)
+    #Logger.info(fn -> "💡 vertex: #{inspect vertex}" end)
+    struct_type = String.to_existing_atom("Elixir." <> vertex.vertex_type)
+    struct = struct(struct_type, vertex)
+    #Logger.info(fn -> "💡 struct: #{inspect struct}" end)
+    %Vertex{graph: graph, uid: uid, vertex_struct: struct}
+  end
+  # TODO: v(graph, property, object) # gremlin> g.V("name", "marko").name
+  
+  @spec values(Vertex, String) :: List
+  def values(vertex, predicate) do
+    graph = vertex.graph
   end
 end
