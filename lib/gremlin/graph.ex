@@ -12,6 +12,7 @@ defmodule Graph do
   """
   defstruct channel: GRPC.Channel,
             vertex: Vertex,
+            edge: Edge,
             vertex_cache: nil
 
   @doc """

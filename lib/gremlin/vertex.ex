@@ -8,13 +8,14 @@ defmodule Vertex do
   The vertex properties.
   Reserved for cache and other
   """
-  defstruct uid: String,
+  defstruct graph: Graph,
+            uid: String,
             vertex_struct: Struct
 
   @doc """
   Creates a new graph
   """
-  def new(the_uid, the_struct) do
-    %Vertex{uid: the_uid, vertex_struct: the_struct}
+  def new(the_graph, the_uid, the_struct) do
+    %Vertex{graph: the_graph, uid: the_uid, vertex_struct: the_struct}
   end
 end
