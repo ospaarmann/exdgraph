@@ -1,8 +1,9 @@
-defmodule Vertex do
+defmodule ExDgraph.Gremlin.Vertex do
   @moduledoc """
   The vertex for gremlin
   """
   require Logger
+  alias ExDgraph.Gremlin.Vertex
 
   @doc """
   The vertex properties.

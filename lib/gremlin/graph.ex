@@ -1,10 +1,10 @@
-defmodule Graph do
+defmodule ExDgraph.Gremlin.Graph do
   @moduledoc """
   The graph for gremlin
   """
   require Logger
 
-  # alias Graph
+  alias ExDgraph.Gremlin.Graph
 
   @doc """
   The graph properties.

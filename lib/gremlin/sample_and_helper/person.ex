@@ -1,8 +1,7 @@
-defmodule Person do
-    @moduledoc """
-    """
+defmodule ExDgraph.Gremlin.Person do
+    @moduledoc false
   
-    alias Person
+    alias ExDgraph.Gremlin.Person
   
     @doc """
     A sample struct
