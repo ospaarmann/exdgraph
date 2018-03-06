@@ -11,8 +11,9 @@ defmodule SimpleBasicTest do
       dob: dateTime ."
   
     setup_all do
-      #Logger.info fn -> "💡 GRPC-Server: #{Application.get_env(:exdgraph, :dgraphServerGRPC)}" end
+      Logger.info fn -> "💡 GRPC-Server: #{Application.get_env(:exdgraph, :dgraphServerGRPC)}" end
       {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
+      Logger.info fn -> "💡 GRPC-channel: #{inspect channel}" end
       operation = ExDgraph.Api.Operation.new(drop_all: true)
       {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
       operation = ExDgraph.Api.Operation.new(schema: @testing_schema)

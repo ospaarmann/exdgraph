@@ -1,6 +1,7 @@
 defmodule ExDgraph.Gremlin do
   @moduledoc """
-  Experimental gremlin helper functions
+  Experimental gremlin support functions [![Build Status](https://semaphoreci.com/api/v1/fulnir/exdgraph/branches/master/badge.svg)](https://semaphoreci.com/fulnir/exdgraph)
+
   See ![Traversal Steps](http://tinkerpop.apache.org/docs/current/reference/#graph-traversal-steps)
 
 
