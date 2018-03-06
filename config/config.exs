@@ -27,4 +27,16 @@ use Mix.Config
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 #
-#     import_config "#{Mix.env}.exs"
+# docker-compose(alternate) with 3 dgraph instances
+# dgraphServerGRPC: 
+#   test: "localhost:9082", 
+#   dev: "http://localhost:9081", 
+#   prod: "http://localhost:9080"
+#   dgraph-ratel -port 8088
+#
+# docker-compose with 1 dgraph instances
+# dgraphServerGRPC: 
+#   test,dev,prod: "localhost:9080", 
+#   dgraph-ratel -port 8080
+#
+import_config "#{Mix.env}.exs"
