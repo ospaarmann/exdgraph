@@ -73,7 +73,7 @@ defmodule ExDgraph.Gremlin.LowLevel do
     {:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
     decoded_json = Poison.decode!(msg.json)
     vertices = decoded_json["vertices"]
-    Logger.info(fn -> "💡 vertices: #{inspect vertices}" end)
+    #Logger.info(fn -> "💡 vertices: #{inspect vertices}" end)
     map =
       Enum.map(vertices, fn vertex_map ->
         vertex = for {key, val} <- vertex_map, into: %{}, do: {String.to_atom(key), val}

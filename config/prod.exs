@@ -33,4 +33,4 @@ config :logger, :console,
 #
 config :exdgraph,
   dgraphServerHTTP: "http://localhost:8080",
-  dgraphServerGRPC: "http://localhost:9080"
+  dgraphServerGRPC: "localhost:9082"

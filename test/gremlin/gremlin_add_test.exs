@@ -116,7 +116,7 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
     assert "knows" == edge.predicate
 
     [person_one] = ExDgraph.Gremlin.LowLevel.query_vertex(graph, "name", "John", "uid name knows { name }")
-    Logger.info(fn -> "💡 person_one: #{inspect person_one}" end)
+    #Logger.info(fn -> "💡 person_one: #{inspect person_one}" end)
     assert "John" == person_one.name
     assert "Peter" == List.first(person_one.knows)["name"]
   end
