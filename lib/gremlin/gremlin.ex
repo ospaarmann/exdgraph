@@ -302,10 +302,10 @@ defmodule ExDgraph.Gremlin do
   def v(graph, uid) do
     vertex = query_vertex(graph, uid)
     # Logger.info(fn -> "💡 vertex: #{inspect vertex}" end)
-    struct_type = String.to_existing_atom("Elixir." <> vertex.vertex_type)
-    struct = struct(struct_type, vertex)
+ #   struct_type = String.to_existing_atom("Elixir." <> vertex.vertex_type)
+ #   struct = struct(struct_type, vertex)
     # Logger.info(fn -> "💡 struct: #{inspect struct}" end)
-    %Vertex{graph: graph, uid: uid, vertex_struct: struct}
+    %Vertex{graph: graph, uid: uid, vertex_struct: vertex}
   end
 
   # TODO: v(graph, property, object) # gremlin> g.V("name", "marko").name

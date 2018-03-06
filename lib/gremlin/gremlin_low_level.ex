@@ -51,7 +51,39 @@ defmodule ExDgraph.Gremlin.LowLevel do
     # Logger.info(fn -> "💡 msg.json: #{inspect msg.json}" end)
     decoded_json = Poison.decode!(msg.json)
     vertices = decoded_json["vertex"]
-    vertex_one = List.first(vertices)
-    for {key, val} <- vertex_one, into: %{}, do: {String.to_atom(key), val}
+    [vertex_one] = vertices
+    vertex = for {key, val} <- vertex_one, into: %{}, do: {String.to_atom(key), val}
+    struct_type = String.to_existing_atom("Elixir." <> vertex.vertex_type)
+    struct(struct_type, vertex)
+  end
+
+  @doc """
+
+  """
+  def query_vertex(graph, predicate, object, display) do
+    channel = graph.channel
+    if display != "expand(_all_)" do
+      display = "vertex_type " <> display
+    end
+    query = """
+    { vertices(func: anyofterms(#{predicate}, \"#{object}\")) { #{display} } }
+    """
+
+    request = ExDgraph.Api.Request.new(query: query)
+    {:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
+    decoded_json = Poison.decode!(msg.json)
+    vertices = decoded_json["vertices"]
+    Logger.info(fn -> "💡 vertices: #{inspect vertices}" end)
+    map =
+      Enum.map(vertices, fn vertex_map ->
+        vertex = for {key, val} <- vertex_map, into: %{}, do: {String.to_atom(key), val}
+        struct_type = String.to_existing_atom("Elixir." <> vertex.vertex_type)
+        struct(struct_type, vertex)
+      end)
+
+    map
+  end
+  def query_vertex(graph, predicate, object) do
+    query_vertex(graph, predicate, object, "expand(_all_)")
   end
 end

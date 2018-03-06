@@ -66,28 +66,9 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
     |> property("name", "Bugs Bunny")
     |> property("type", "Toon")
 
-    # TODO: Helper func
-    # Connect to Server
-    {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
-
-    query = """
-      {
-        toons(func: anyofterms(name, "Bugs Bunny"))
-        {
-          uid
-          name
-          type
-        }
-      }
-    """
-
-    request = ExDgraph.Api.Request.new(query: query)
-    {:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
-    json = Poison.decode!(msg.json)
-    toons = json["toons"]
-    toon_one = List.first(toons)
-    assert "Bugs Bunny" == toon_one["name"]
-    assert "Toon" == toon_one["type"]
+    [toon_one] = ExDgraph.Gremlin.LowLevel.query_vertex(graph, "name", "Bugs Bunny")
+    assert "Bugs Bunny" == toon_one.name
+    assert "Toon" == toon_one.type
   end
 
   test "Gremlin AddVertex Step ; AddProperty Step ! version" do
@@ -99,28 +80,9 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
     |> property!("name", "Bugs Bunny")
     |> property!("type", "Toon")
 
-    # TODO: Helper func
-    # Connect to Server
-    {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
-
-    query = """
-      {
-        toons(func: anyofterms(name, "Bugs Bunny"))
-        {
-          uid
-          name
-          type
-        }
-      }
-    """
-
-    request = ExDgraph.Api.Request.new(query: query)
-    {:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
-    json = Poison.decode!(msg.json)
-    [toon_one] = json["toons"]
-    # toon_one = List.first(toons)
-    assert "Bugs Bunny" == toon_one["name"]
-    assert "Toon" == toon_one["type"]
+    [toon_one] = ExDgraph.Gremlin.LowLevel.query_vertex(graph, "name", "Bugs Bunny")
+    assert "Bugs Bunny" == toon_one.name
+    assert "Toon" == toon_one.type
   end
 
   test "Gremlin AddEdge Step" do
@@ -152,29 +114,11 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
       |> to(peter)
 
     assert "knows" == edge.predicate
-    # TODO: Helper func 
-    # Connect to Server
-    {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
 
-    query = """
-      {
-        person(func: anyofterms(name, "John"))
-        {
-          uid
-          name
-          knows { name }
-        }
-      }
-    """
-
-    request = ExDgraph.Api.Request.new(query: query)
-    {:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
-    json = Poison.decode!(msg.json)
-    [person_one] = json["person"]
-    # Logger.info(fn -> "💡 json: #{inspect json}" end)
-    # person_one = List.first(persons)
-    assert "John" == person_one["name"]
-    assert "Peter" == List.first(person_one["knows"])["name"]
+    [person_one] = ExDgraph.Gremlin.LowLevel.query_vertex(graph, "name", "John", "uid name knows { name }")
+    Logger.info(fn -> "💡 person_one: #{inspect person_one}" end)
+    assert "John" == person_one.name
+    assert "Peter" == List.first(person_one.knows)["name"]
   end
 
   test "Gremlin Vertex Step" do
