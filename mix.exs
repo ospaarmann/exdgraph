@@ -22,7 +22,13 @@ defmodule ExDgraph.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      applications:
+        [
+          :logger,
+          :poolboy,
+          :db_connection,
+          :retry
+        ]
     ]
   end
 
@@ -32,6 +38,9 @@ defmodule ExDgraph.MixProject do
       {:grpc, github: "tony612/grpc-elixir"},
       {:protobuf, "~> 0.5"},
       {:poison, "~> 3.1"},
+      {:poolboy, "~> 1.5.1"},
+      {:db_connection, github: 'elixir-ecto/db_connection'},
+      {:retry, "~> 0.8"},
       {:ex_doc, "~> 0.16", only: :dev, runtime: false}
     ]
   end
