@@ -15,7 +15,7 @@ services:
 env:
   global:
     - DGRAPH_HOST_TEST=localhost
-    - DGRAPH_PORT_TEST=9080
+    - DGRAPH_PORT_TEST=9082
     - MIX_ENV=test
     - DOCKER_COMPOSE_VERSION=1.19.0
 
