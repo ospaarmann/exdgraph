@@ -12,7 +12,6 @@ defmodule StarWarsSampleTest do
       dob: dateTime ."
 
   setup_all do
-    # Logger.info fn -> "💡 GRPC-Server: #{Application.get_env(:exdgraph, :dgraphServerGRPC)}" end
     {:ok, channel} = GRPC.Stub.connect("localhost:9080")
     operation = Operation.new(drop_all: true)
     {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
@@ -28,8 +27,6 @@ defmodule StarWarsSampleTest do
   end
 
   test "Create & Query", %{channel: channel} do
-    # Port: 9080 or 9082
-    # {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
     # Define query (for now just a string)
     m = """
            _:luke <name> "Luke Skywalker" .
