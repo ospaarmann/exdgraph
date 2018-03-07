@@ -21,3 +21,6 @@ erl_crash.dump
 
 # Ignore package tarball (built via "mix hex.build").
 exdgraph-*.tar
+.DS_Store
+/.elixir_ls
+.elixir_ls
