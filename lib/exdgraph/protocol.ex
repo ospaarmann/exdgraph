@@ -13,14 +13,15 @@ defmodule ExDgraph.Protocol do
   @doc "Callback for DBConnection.connect/1"
   def connect(_opts) do
     case GRPC.Stub.connect("localhost:9080") do
-      {:ok, channel} -> {:ok, channel}
+      {:ok, channel} ->
+        {:ok, channel}
+
       _ ->
         Logger.error("ExDgraph: Connection Failed")
         {:error, ExDgraph.Error}
-      # TODO: Proper error handling
+        # TODO: Proper error handling
     end
   end
-
 
   @doc "Callback for DBConnection.checkout/1"
   def checkout(state) do
@@ -61,5 +62,4 @@ defmodule ExDgraph.Protocol do
 
     {:ok, state}
   end
-
 end

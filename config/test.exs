@@ -1,7 +1,8 @@
 use Mix.Config
 
 config :ex_dgraph, ExDgraph,
-  url: 'localhost', # default port considered to be: 9080
+  # default port considered to be: 9080
+  url: 'localhost',
   pool_size: 5,
   max_overflow: 1,
   # retry the request, in case of error - in the example below the retry will
@@ -9,5 +10,6 @@ config :ex_dgraph, ExDgraph,
   # cap the delay at 15 seconds (the value defined by the default `:timeout`
   # parameter) and giving up after 3 attempts
   retry_linear_backoff: [delay: 150, factor: 2, tries: 3]
-  # the `retry_linear_backoff` values above are also the default driver values,
-  # re-defined here mostly as a reminder
+
+# the `retry_linear_backoff` values above are also the default driver values,
+# re-defined here mostly as a reminder

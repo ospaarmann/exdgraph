@@ -12,7 +12,7 @@ defmodule ExDgraph do
   alias ExDgraph.Utils
 
   @type conn :: DBConnection.conn()
-  #@type transaction :: DBConnection.t()
+  # @type transaction :: DBConnection.t()
 
   @doc """
   Start the connection process and connect to Dgraph

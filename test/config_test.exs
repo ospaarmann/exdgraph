@@ -24,5 +24,4 @@ defmodule Config.Test do
     assert config[:hostname] == 'localhost'
     assert config[:port] == 9080
   end
-
 end
