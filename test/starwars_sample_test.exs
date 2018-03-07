@@ -15,11 +15,19 @@ defmodule StarWarsSampleTest do
 
   setup_all do
     cnf = Utils.default_config()
+    Logger.info("Config")
+    IO.inspect(cnf)
     {:ok, channel} = GRPC.Stub.connect("#{cnf[:hostname]}:#{cnf[:port]}")
+    Logger.info("Connect")
+    IO.inspect(channel)
     operation = Operation.new(drop_all: true)
     {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
+    Logger.info("Operation")
+    IO.inspect(operation)
     operation = Operation.new(schema: @testing_schema)
     {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
+    IO.inspect(operation)
+    Logger.info("Operation")
 
     on_exit(fn ->
       # close channel ?
