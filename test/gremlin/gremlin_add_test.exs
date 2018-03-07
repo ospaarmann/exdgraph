@@ -28,7 +28,7 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
   alias ExDgraph.Gremlin.Graph
 
   # Extend the timeout
-  @moduletag timeout: 120000
+  @moduletag timeout: 120_000
 
   doctest ExDgraph.Gremlin
   @testing_schema "id: string @index(exact).
@@ -39,22 +39,8 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
     friend: uid @count .
     dob: dateTime ."
 
-  # setup_all do
-  #   #Logger.info(fn -> "💡 GRPC-Server: #{Application.get_env(:exdgraph, :dgraphServerGRPC)}" end)
-    # ! --------------------------
-    # ! Wait until dgraph is ready
-    # ! --------------------------
-    Process.sleep(2000)
-  #   {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
-  #   operation = ExDgraph.Api.Operation.new(drop_all: true)
-  #   {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
-  #   operation = ExDgraph.Api.Operation.new(schema: @testing_schema)
-  #   {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
-  #   :ok
-  # end
-
-  setup do
-    #   Logger.info(fn -> "💡 Setup " end)
+  setup_all do
+    # Logger.info(fn -> "💡 GRPC-Server: #{Application.get_env(:exdgraph, :dgraphServerGRPC)}" end)
     # ! --------------------------
     # ! Wait until dgraph is ready
     # ! --------------------------
@@ -64,8 +50,23 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
     {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
     operation = ExDgraph.Api.Operation.new(schema: @testing_schema)
     {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
+    Process.sleep(2000)
     :ok
   end
+
+  # setup do
+  #   #   Logger.info(fn -> "💡 Setup " end)
+  #   # ! --------------------------
+  #   # ! Wait until dgraph is ready
+  #   # ! --------------------------
+  #   Process.sleep(2000)
+  #   {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
+  #   operation = ExDgraph.Api.Operation.new(drop_all: true)
+  #   {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
+  #   operation = ExDgraph.Api.Operation.new(schema: @testing_schema)
+  #   {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
+  #   :ok
+  # end
 
   test "Gremlin AddVertex Step ; AddProperty Step" do
     {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
@@ -73,11 +74,11 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
 
     graph
     |> addV(Toon)
-    |> property("name", "Bugs Bunny")
+    |> property("name", "Duffy Duck")
     |> property("type", "Toon")
 
-    [toon_one] = ExDgraph.Gremlin.LowLevel.query_vertex(graph, "name", "Bugs Bunny")
-    assert "Bugs Bunny" == toon_one.name
+    [toon_one] = ExDgraph.Gremlin.LowLevel.query_vertex(graph, "name", "Duffy Duck")
+    assert "Duffy Duck" == toon_one.name
     assert "Toon" == toon_one.type
   end
 
@@ -125,8 +126,10 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
 
     assert "knows" == edge.predicate
 
-    [person_one] = ExDgraph.Gremlin.LowLevel.query_vertex(graph, "name", "John", "uid name knows { name }")
-    #Logger.info(fn -> "💡 person_one: #{inspect person_one}" end)
+    [person_one] =
+      ExDgraph.Gremlin.LowLevel.query_vertex(graph, "name", "John", "uid name knows { name }")
+
+    # Logger.info(fn -> "💡 person_one: #{inspect person_one}" end)
     assert "John" == person_one.name
     assert "Peter" == List.first(person_one.knows)["name"]
   end
@@ -162,5 +165,7 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
       graph
       |> v(edwin.uid)
       |> values("name")
+
+      vertex
   end
 end
