@@ -11,6 +11,10 @@ defmodule SimpleBasicTest do
       dob: dateTime ."
   
     setup_all do
+      # ! --------------------------
+      # ! Wait until dgraph is ready
+      # ! --------------------------
+      Process.sleep(2000)
       Logger.info fn -> "💡 GRPC-Server: #{Application.get_env(:exdgraph, :dgraphServerGRPC)}" end
       {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
       Logger.info fn -> "💡 GRPC-channel: #{inspect channel}" end

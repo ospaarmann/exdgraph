@@ -19,7 +19,6 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
 
 
 
-
   """
   require Logger
   use ExUnit.Case
@@ -27,6 +26,9 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
   alias ExDgraph.Gremlin.Toon
   alias ExDgraph.Gremlin.Person
   alias ExDgraph.Gremlin.Graph
+
+  # Extend the timeout
+  @moduletag timeout: 120000
 
   doctest ExDgraph.Gremlin
   @testing_schema "id: string @index(exact).
@@ -39,6 +41,10 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
 
   # setup_all do
   #   #Logger.info(fn -> "💡 GRPC-Server: #{Application.get_env(:exdgraph, :dgraphServerGRPC)}" end)
+    # ! --------------------------
+    # ! Wait until dgraph is ready
+    # ! --------------------------
+    Process.sleep(2000)
   #   {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
   #   operation = ExDgraph.Api.Operation.new(drop_all: true)
   #   {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
@@ -49,6 +55,10 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
 
   setup do
     #   Logger.info(fn -> "💡 Setup " end)
+    # ! --------------------------
+    # ! Wait until dgraph is ready
+    # ! --------------------------
+    Process.sleep(2000)
     {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
     operation = ExDgraph.Api.Operation.new(drop_all: true)
     {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)

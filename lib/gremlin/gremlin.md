@@ -1,6 +1,5 @@
 
 # Gremlin graph support
-[![Build Status](https://semaphoreci.com/api/v1/fulnir/exdgraph/branches/master/badge.svg)](https://semaphoreci.com/fulnir/exdgraph)
 
 In this case, only elixir functions which simulate gremlin.
 
