@@ -15,7 +15,10 @@ defmodule ExDgraph.MixProject do
       name: "ExDgraph",
       source_url: "https://github.com/ospaarmann/exdgraph",
       # The main page in the docs
-      docs: [main: "ExDgraph", extras: ["README.md"]]
+      docs: [main: "ExDgraph", extras: ["README.md"]],
+      # ExCoveralls
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test]
     ]
   end
 
@@ -42,7 +45,8 @@ defmodule ExDgraph.MixProject do
       {:db_connection, github: 'elixir-ecto/db_connection'},
       {:retry, "~> 0.8"},
       {:ex_doc, "~> 0.16", only: :dev, runtime: false},
-      {:mix_test_watch, "~> 0.5", only: :dev, runtime: false}
+      {:mix_test_watch, "~> 0.5", only: :dev, runtime: false},
+      {:excoveralls, "~> 0.8", only: :test}
     ]
   end
 
