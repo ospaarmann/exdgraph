@@ -18,20 +18,24 @@ defmodule ExDgraph.MixProject do
       docs: [main: "ExDgraph", extras: ["README.md"]],
       # ExCoveralls
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test]
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ]
     ]
   end
 
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      applications:
-        [
-          :logger,
-          :poolboy,
-          :db_connection,
-          :retry
-        ]
+      applications: [
+        :logger,
+        :poolboy,
+        :db_connection,
+        :retry
+      ]
     ]
   end
 
