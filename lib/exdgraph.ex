@@ -9,7 +9,7 @@ defmodule ExDgraph do
   @timeout 15_000
 
   alias ExDgraph.Api.{Dgraph, Request, Response, Mutation, Operation}
-  alias ExDgraph.Utils
+  alias ExDgraph.{ConfigAgent, Utils}
 
   @type conn :: DBConnection.conn()
   # @type transaction :: DBConnection.t()
