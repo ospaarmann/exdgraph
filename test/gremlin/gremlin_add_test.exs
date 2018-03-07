@@ -39,37 +39,24 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
     friend: uid @count .
     dob: dateTime ."
 
-  setup_all do
-    # Logger.info(fn -> "💡 GRPC-Server: #{Application.get_env(:exdgraph, :dgraphServerGRPC)}" end)
-    # ! --------------------------
-    # ! Wait until dgraph is ready
-    # ! --------------------------
-    Process.sleep(2000)
+  setup do
+    # Logger.info fn -> "💡 GRPC-Server: #{Application.get_env(:exdgraph, :dgraphServerGRPC)}" end
     {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
     operation = ExDgraph.Api.Operation.new(drop_all: true)
     {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
     operation = ExDgraph.Api.Operation.new(schema: @testing_schema)
     {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
-    Process.sleep(2000)
-    :ok
+
+    on_exit(fn ->
+      # close channel ?
+      :ok
+    end)
+
+    [channel: channel]
   end
 
-  # setup do
-  #   #   Logger.info(fn -> "💡 Setup " end)
-  #   # ! --------------------------
-  #   # ! Wait until dgraph is ready
-  #   # ! --------------------------
-  #   Process.sleep(2000)
-  #   {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
-  #   operation = ExDgraph.Api.Operation.new(drop_all: true)
-  #   {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
-  #   operation = ExDgraph.Api.Operation.new(schema: @testing_schema)
-  #   {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
-  #   :ok
-  # end
-
-  test "Gremlin AddVertex Step ; AddProperty Step" do
-    {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
+  test "Gremlin AddVertex Step ; AddProperty Step", %{channel: channel} do
+    # {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
     {:ok, graph} = Graph.new(channel)
 
     graph
@@ -82,8 +69,8 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
     assert "Toon" == toon_one.type
   end
 
-  test "Gremlin AddVertex Step ; AddProperty Step ! version" do
-    {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
+  test "Gremlin AddVertex Step ; AddProperty Step ! version", %{channel: channel} do
+    # {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
     {:ok, graph} = Graph.new(channel)
 
     graph
@@ -96,8 +83,8 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
     assert "Toon" == toon_one.type
   end
 
-  test "Gremlin AddEdge Step" do
-    {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
+  test "Gremlin AddEdge Step", %{channel: channel} do
+    # {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
     {:ok, graph} = Graph.new(channel)
 
     {:ok, marko} =
@@ -134,8 +121,8 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
     assert "Peter" == List.first(person_one.knows)["name"]
   end
 
-  test "Gremlin Vertex Step" do
-    {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
+  test "Gremlin Vertex Step", %{channel: channel} do
+    # {:ok, channel} = GRPC.Stub.connect(Application.get_env(:exdgraph, :dgraphServerGRPC))
     {:ok, graph} = Graph.new(channel)
 
     {:ok, edwin} =
@@ -166,6 +153,6 @@ defmodule ExDgraph.Gremlin.GremlinAddTest do
       |> v(edwin.uid)
       |> values("name")
 
-      vertex
+    vertex
   end
 end

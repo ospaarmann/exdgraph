@@ -62,4 +62,5 @@ services:
       - /tmp/data:/dgraph
     ports:
       - 8000:8000
+    restart: on-failure
     command: dgraph-ratel -port 8000
