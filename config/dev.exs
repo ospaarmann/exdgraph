@@ -2,7 +2,7 @@ use Mix.Config
 
 config :ex_dgraph, ExDgraph,
   # default port considered to be: 9080
-  url: 'localhost',
+  hostname: '127.0.0.1',
   pool_size: 5,
   max_overflow: 1,
   # retry the request, in case of error - in the example below the retry will
