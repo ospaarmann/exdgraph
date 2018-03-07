@@ -13,12 +13,12 @@ I am using [tony612/grpc-elixir](https://github.com/tony612/grpc-elixir) as Elix
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `exdgraph` to your list of dependencies in `mix.exs`:
+by adding `ex_dgraph` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:exdgraph, "~> 0.1.0", github: "ospaarmann/exdgraph", branch: "master"}
+    {:ex_dgraph, "~> 0.1.0", github: "ospaarmann/exdgraph", branch: "master"}
   ]
 end
 ```
