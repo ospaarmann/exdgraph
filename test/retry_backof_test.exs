@@ -14,10 +14,11 @@ defmodule Retry.Backoff.Test do
 
     {elapsed, _} =
       :timer.tc(fn ->
-        {:error, [code: 2, message: message ]}
-        =retry with: lin_backoff(500, 1) |> take(5) do
+        {:error, [code: 2, message: message]} =
+          retry with: lin_backoff(500, 1) |> take(5) do
             ExDgraph.query(conn, "INVALID")
           end
+
         assert message =~ "while lexing INVALID: Invalid operation type: INVALID"
       end)
 
