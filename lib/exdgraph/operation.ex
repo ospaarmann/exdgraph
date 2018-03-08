@@ -23,9 +23,10 @@ defmodule ExDgraph.Operation do
   end
 
   defp operation_commit(conn, operation) do
-    operation_processed = Map.put_new(operation, :drop_all, false)
-    |> Map.put_new(:drop_attr, "")
-    |> Map.put_new(:schema, "")
+    operation_processed =
+      Map.put_new(operation, :drop_all, false)
+      |> Map.put_new(:drop_attr, "")
+      |> Map.put_new(:schema, "")
 
     exec = fn conn ->
       operation = %OperationStatement{
@@ -33,6 +34,7 @@ defmodule ExDgraph.Operation do
         drop_attr: operation_processed.drop_attr,
         schema: operation_processed.schema
       }
+
       case DBConnection.execute(conn, operation, %{}) do
         {:ok, resp} -> resp
         other -> other
@@ -43,10 +45,7 @@ defmodule ExDgraph.Operation do
     DBConnection.run(conn, exec, run_opts())
   end
 
-
-
   defp run_opts do
     [pool: ExDgraph.config(:pool)]
   end
-
 end
