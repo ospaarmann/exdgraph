@@ -8,7 +8,7 @@ defmodule MutationTest do
 
   alias ExDgraph.Utils
 
-  setup_all do
+  setup do
     conn = ExDgraph.conn()
     drop_all()
     import_starwars_sample()
