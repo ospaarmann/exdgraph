@@ -4,8 +4,6 @@ defmodule StarWarsSampleTest do
   use ExUnit.Case
   require Logger
 
-  alias ExDgraph.{Operation}
-
   @testing_schema "id: string @index(exact).
       name: string @index(exact, term) @count .
       age: int @index(int) .
@@ -15,8 +13,8 @@ defmodule StarWarsSampleTest do
   setup_all do
     conn = ExDgraph.conn()
     # TODO: It fails right at the connect on TravisCI
-    Operation.operation(conn, %{drop_all: true})
-    Operation.operation(conn, %{schema: @testing_schema})
+    ExDgraph.operation(conn, %{drop_all: true})
+    ExDgraph.operation(conn, %{schema: @testing_schema})
 
     on_exit(fn ->
       # close channel ?
