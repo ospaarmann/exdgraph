@@ -9,7 +9,7 @@ defmodule Config.Test do
     max_overflow: 7
   ]
 
-  test "standard Bolt.Sips configuration parameters" do
+  test "standard ExDgraph configuration parameters" do
     config = Utils.default_config(@basic_config)
 
     assert config[:hostname] == 'ole'
