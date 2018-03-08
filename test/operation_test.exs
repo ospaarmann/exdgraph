@@ -4,9 +4,6 @@ defmodule OperationTest do
   use ExUnit.Case
   require Logger
   import ExDgraph.TestHelper
-  alias ExDgraph.Api.Operation
-
-  alias ExDgraph.Utils
 
   setup do
     conn = ExDgraph.conn()
