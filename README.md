@@ -142,7 +142,7 @@ $ mix test
 
 - [X] Connect to Dgraph server via gRPC
 - [X] Implement DBConnection behaviour
-- [ ] Improve test coverage
+- [X] Improve test coverage
 - [ ] Add documenation
 - [X] Improve error handling
 - [ ] Implement TLS / authentication
