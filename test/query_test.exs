@@ -41,6 +41,8 @@ defmodule ExDgraph.QueryTest do
 
   test "query/2 with wrong query returns {:error, error}", %{conn: conn} do
     res = ExDgraph.Query.query(conn, "wrong")
-    assert res == {:error, [code: 2, message: "while lexing wrong: Invalid operation type: wrong"]}
+
+    assert res ==
+             {:error, [code: 2, message: "while lexing wrong: Invalid operation type: wrong"]}
   end
 end
