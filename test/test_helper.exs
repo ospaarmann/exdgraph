@@ -9,7 +9,7 @@ defmodule ExDgraph.TestHelper do
       friend: uid @count .
       dob: dateTime ."
 
-  @starwars_sample """
+  @starwars_creation_mutation """
          _:luke <name> "Luke Skywalker" .
          _:leia <name> "Princess Leia" .
          _:han <name> "Han Solo" .
@@ -53,7 +53,11 @@ defmodule ExDgraph.TestHelper do
   def import_starwars_sample() do
     conn = ExDgraph.conn()
     ExDgraph.operation(conn, %{schema: @starwars_schema})
-    {:ok, _} = ExDgraph.mutation(conn, @starwars_sample)
+    {:ok, _} = ExDgraph.mutation(conn, @starwars_creation_mutation)
+  end
+
+  def starwars_creation_mutation() do
+    @starwars_creation_mutation
   end
 
   def drop_all() do
