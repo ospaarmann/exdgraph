@@ -55,7 +55,7 @@ defmodule ExDgraph.QueryTest do
     assert "1983-05-25" == one["release_date"]
   end
 
-  test "query!/2 raises exception", %{conn: conn} do
+  test "query!/2 raises ExDgraph.Exception", %{conn: conn} do
     assert_raise ExDgraph.Exception, fn ->
       ExDgraph.Query.query!(conn, "wrong")
     end
