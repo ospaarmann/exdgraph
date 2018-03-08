@@ -1,0 +1,10 @@
+{
+  "skip_files": [
+    "lib/mutation_statement.ex",
+    "lib/operation_statement.ex",
+    "lib/query_statement.ex"
+  ],
+  "coverage_options": {
+    "treat_no_relevant_lines_as_covered": true
+  }
+}
