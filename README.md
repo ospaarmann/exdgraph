@@ -1,4 +1,4 @@
-# ExDgraph [![Build Status](https://travis-ci.org/ospaarmann/exdgraph.svg?branch=master)](https://travis-ci.org/ospaarmann/exdgraph) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+# ExDgraph [![Build Status](https://travis-ci.org/ospaarmann/exdgraph.svg?branch=master)](https://travis-ci.org/ospaarmann/exdgraph) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Coverage Status](https://coveralls.io/repos/github/ospaarmann/exdgraph/badge.svg?branch=master)](https://coveralls.io/github/ospaarmann/exdgraph?branch=master)
 
 **This is work in progress and not functional as of now. If you want to help, please drop me a message. Any help is greatly appreciated!**
 
