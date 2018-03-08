@@ -45,4 +45,19 @@ defmodule ExDgraph.QueryTest do
     assert res ==
              {:error, [code: 2, message: "while lexing wrong: Invalid operation type: wrong"]}
   end
+
+  test "query!/2 with correct query returns query_msg", %{conn: conn} do
+    query_msg = ExDgraph.Query.query!(conn, @sample_query)
+    res = query_msg.result
+    starwars = res["starwars"]
+    one = List.first(starwars)
+    assert "Star Wars: Episode VI - Return of the Jedi" == one["name"]
+    assert "1983-05-25" == one["release_date"]
+  end
+
+  test "query!/2 raises exception", %{conn: conn} do
+    assert_raise ExDgraph.Exception, fn ->
+      ExDgraph.Query.query!(conn, "wrong")
+    end
+  end
 end
