@@ -5,7 +5,7 @@ defmodule StarWarsSampleTest do
   require Logger
   alias ExDgraph.Api.Operation
 
-  alias ExDgraph.Utils
+  alias ExDgraph.{QueryStatement, Utils}
 
   @testing_schema "id: string @index(exact).
       name: string @index(exact, term) @count .
@@ -93,12 +93,15 @@ defmodule StarWarsSampleTest do
       }
     """
 
-    request = ExDgraph.Api.Request.new(query: query)
-    {:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
-    json = Poison.decode!(msg.json)
-    starwars = json["starwars"]
+    conn = ExDgraph.conn()
+    {:ok, msg} = ExDgraph.query(conn, query)
+    res = msg.result
+    starwars = res["starwars"]
     one = List.first(starwars)
     assert "Star Wars: Episode VI - Return of the Jedi" == one["name"]
     assert "1983-05-25" == one["release_date"]
+
+    msg2 = ExDgraph.query!(conn, query)
+    assert msg = msg2
   end
 end
