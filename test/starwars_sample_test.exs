@@ -94,6 +94,6 @@ defmodule StarWarsSampleTest do
     assert "1983-05-25" == one["release_date"]
 
     query_msg2 = ExDgraph.query!(conn, query)
-    assert query_msg = query_msg2
+    assert query_msg.result == query_msg2.result
   end
 end
