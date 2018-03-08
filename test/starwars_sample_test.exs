@@ -3,9 +3,8 @@ defmodule StarWarsSampleTest do
   """
   use ExUnit.Case
   require Logger
-  alias ExDgraph.Api
 
-  alias ExDgraph.{Utils, Operation}
+  alias ExDgraph.{Operation}
 
   @testing_schema "id: string @index(exact).
       name: string @index(exact, term) @count .
@@ -72,7 +71,7 @@ defmodule StarWarsSampleTest do
     """
 
     # Build request
-    {:ok, mutation_msg} = ExDgraph.mutation(conn, mutation)
+    {:ok, _} = ExDgraph.mutation(conn, mutation)
 
     query = """
       {
