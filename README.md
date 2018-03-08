@@ -72,6 +72,26 @@ conn = ExDgraph.conn()
 {:ok, msg} = ExDgraph.query(conn, query)
 ```
 
+**Examples for an operation**
+
+```elixir
+# Connect
+conn = ExDgraph.conn()
+
+# Drop all entries from the database
+ExDgraph.operation(conn, %{drop_all: true})
+
+# Create schema
+@testing_schema "id: string @index(exact).
+  name: string @index(exact, term) @count .
+  age: int @index(int) .
+  friend: uid @count .
+  dob: dateTime ."
+
+# Run operation
+ExDgraph.operation(conn, %{schema: @testing_schema})
+```
+
 **Example for a raw query**
 
 ```elixir
@@ -111,7 +131,7 @@ json = Poison.decode!(msg.json)
 - [ ] Improve test coverage
 - [ ] Improve error handling
 - [ ] Implement TLS / authentication
-- [ ] Improve request model via specific module 
+- [ ] Improve request model via specific module
 - [ ] Improve response model via specific module
 - [X] Query builder
 - [X] Query executer
