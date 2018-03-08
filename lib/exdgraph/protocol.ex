@@ -10,7 +10,8 @@ defmodule ExDgraph.Protocol do
 
   require Logger
 
-  alias ExDgraph.{MutationStatement, QueryStatement}
+  alias ExDgraph.Api
+  alias ExDgraph.{MutationStatement, OperationStatement, QueryStatement}
 
   @doc "Callback for DBConnection.connect/1"
   def connect(_opts) do
@@ -102,6 +103,16 @@ defmodule ExDgraph.Protocol do
     request = ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
 
     case ExDgraph.Api.Dgraph.Stub.mutate(channel, request) do
+      {:ok, res} -> {:ok, res, channel}
+    end
+  rescue
+    e ->
+      {:error, e}
+  end
+
+  defp execute(%OperationStatement{drop_all: drop_all, schema: schema, drop_attr: drop_attr}, params, _, channel) do
+    operation = Api.Operation.new(drop_all: drop_all, schema: schema, drop_attr: drop_attr)
+    case ExDgraph.Api.Dgraph.Stub.alter(channel, operation) do
       {:ok, res} -> {:ok, res, channel}
     end
   rescue

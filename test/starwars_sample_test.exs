@@ -3,9 +3,9 @@ defmodule StarWarsSampleTest do
   """
   use ExUnit.Case
   require Logger
-  alias ExDgraph.Api.Operation
+  alias ExDgraph.Api
 
-  alias ExDgraph.{Utils}
+  alias ExDgraph.{Utils, Operation}
 
   @testing_schema "id: string @index(exact).
       name: string @index(exact, term) @count .
@@ -14,25 +14,20 @@ defmodule StarWarsSampleTest do
       dob: dateTime ."
 
   setup_all do
-    cnf = Utils.default_config()
-    # TODO: It fails right at the connect on TravisCi
-    {:ok, channel} = GRPC.Stub.connect("#{cnf[:hostname]}:#{cnf[:port]}")
-    operation = Operation.new(drop_all: true)
-    {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
-    operation = Operation.new(schema: @testing_schema)
-    {:ok, _} = channel |> ExDgraph.Api.Dgraph.Stub.alter(operation)
+    conn = ExDgraph.conn()
+    # TODO: It fails right at the connect on TravisCI
+    Operation.operation(conn, %{drop_all: true})
+    Operation.operation(conn, %{schema: @testing_schema})
 
     on_exit(fn ->
       # close channel ?
       :ok
     end)
 
-    [channel: channel]
+    [conn: conn]
   end
 
-  test "Create & Query", %{channel: channel} do
-    # Get connection
-    conn = ExDgraph.conn()
+  test "Create & Query", %{conn: conn} do
 
     # Define query (for now just a string)
     mutation = """
