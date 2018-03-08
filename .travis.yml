@@ -2,7 +2,8 @@ language: elixir
 
 elixir:
   - 1.6
-
+otp_release:
+  - 20.0
 cache:
   directories:
     - deps
@@ -56,6 +57,3 @@ before_install:
   # whatever reason it's best to report that now before your tests start
   # otherwise it can be really tricky to debug why tests are failing sometimes.
   - docker ps
-
-  #  Sleeping TESTING IF DGRAPH ISN'T READY
-  - sleep 60
