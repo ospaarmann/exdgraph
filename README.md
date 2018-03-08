@@ -35,13 +35,13 @@ end
 And add the application to your list of applications in `mix.exs`:
 
 ```elixir
-  def application do
-    [
-      applications: [
-        :ex_dgraph
-      ]
+def application do
+  [
+    applications: [
+      :ex_dgraph
     ]
-  end
+  ]
+end
 ```
 
 ## Usage
@@ -54,22 +54,22 @@ At the moment simple queries are supported via the DBConnection behaviour. Every
 
 ```elixir
 query = """
+  {
+      starwars(func: anyofterms(name, "VI"))
       {
-          starwars(func: anyofterms(name, "VI"))
-          {
-            uid
-            name
-            release_date
-            starring
-            {
-              name
-            }
-          }
+        uid
+        name
+        release_date
+        starring
+        {
+          name
+        }
       }
-    """
+  }
+"""
 
-    conn = ExDgraph.conn()
-    {:ok, msg} = ExDgraph.query(conn, query)
+conn = ExDgraph.conn()
+{:ok, msg} = ExDgraph.query(conn, query)
 ```
 
 **Example for a raw query**
@@ -80,25 +80,25 @@ query = """
 
 # Define query (for now just a string)
 query = """
+  {
+      starwars(func: anyofterms(name, "VI"))
       {
-          starwars(func: anyofterms(name, "VI"))
-          {
-            uid
-            name
-            release_date
-            starring
-            {
-              name
-            }
-          }
+        uid
+        name
+        release_date
+        starring
+        {
+          name
+        }
       }
-    """
-    # Build request
-    request = ExDgraph.Api.Request.new(query: query)
-    # Send request to server
-    {:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
-    # Parse result
-    json = Poison.decode!(msg.json)
+  }
+"""
+# Build request
+request = ExDgraph.Api.Request.new(query: query)
+# Send request to server
+{:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
+# Parse result
+json = Poison.decode!(msg.json)
 ```
 
 ## Roadmap
