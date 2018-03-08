@@ -124,6 +124,18 @@ request = ExDgraph.Api.Request.new(query: query)
 json = Poison.decode!(msg.json)
 ```
 
+## Running tests
+You need Dgraph running locally on port 9080. A quick way of running any version of Dgraph, is via docker:
+
+```
+$ git clone git@github.com:ospaarmann/exdgraph.git
+$ cd exdgraph
+$ docker-compose up
+$ mix test
+```
+
+[More info on how to run Dgraph locally.](https://docs.dgraph.io/get-started/)
+
 ## Roadmap
 
 - [X] Connect to Dgraph server via gRPC
