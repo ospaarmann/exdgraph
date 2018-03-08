@@ -2,11 +2,6 @@ defmodule ExDgraph.Utils do
   @moduledoc "Common utilities"
 
   @doc """
-  Generate a random string.
-  """
-  def random_id, do: :rand.uniform() |> Float.to_string() |> String.slice(2..10)
-
-  @doc """
   Fills in the given `opts` with default options.
   """
   @spec default_config(Keyword.t()) :: Keyword.t()
