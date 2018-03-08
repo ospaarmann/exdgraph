@@ -93,10 +93,13 @@ query = """
       }
   }
 """
+
 # Build request
 request = ExDgraph.Api.Request.new(query: query)
+
 # Send request to server
 {:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
+
 # Parse result
 json = Poison.decode!(msg.json)
 ```
