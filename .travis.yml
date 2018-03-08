@@ -58,6 +58,4 @@ before_install:
   - docker ps
 
   #  Sleeping TESTING IF DGRAPH ISN'T READY
-  - echo "Sleeping"
-	- sleep 60
-  - echo "Wake up"
+  - sleep 60
