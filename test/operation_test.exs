@@ -26,4 +26,21 @@ defmodule OperationTest do
     assert status == :ok
     assert operation_msg == %ExDgraph.Api.Payload{Data: ""}
   end
+
+  test "operation/2 returns {:error, error} for incorrect operation", %{conn: conn} do
+    {status, error} = ExDgraph.operation(conn, %{})
+    assert status == :error
+    assert error[:code] == 2
+  end
+
+  test "operation!(%{drop_all: true}) is successful", %{conn: conn} do
+    operation_msg = ExDgraph.operation!(conn, %{drop_all: true})
+    assert operation_msg == %ExDgraph.Api.Payload{Data: ""}
+  end
+
+  test "operation!/2 raises ExDgraph.Exception for incorrect operation", %{conn: conn} do
+    assert_raise ExDgraph.Exception, fn ->
+      ExDgraph.operation!(conn, %{})
+    end
+  end
 end
