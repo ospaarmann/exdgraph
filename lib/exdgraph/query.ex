@@ -11,6 +11,9 @@ defmodule ExDgraph.Query do
     end
   end
 
+  @doc """
+  Runs a query agains the database. Either returns {:ok, result} or {:error, error}
+  """
   def query(conn, statement) do
     case query_commit(conn, statement) do
       {:error, f} -> {:error, code: f.code, message: f.message}
