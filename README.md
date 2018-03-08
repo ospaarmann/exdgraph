@@ -48,7 +48,7 @@ end
 
 Again, this is work in progress. I'll add more examples on how to use this on the go. So far you can connect to a server and run a simple query. I recommend installing and running Dgraph locally with Docker. You find information on how to do that [here](https://docs.dgraph.io/get-started/#from-docker-image). To use this simple example you first have to [import the example data](https://docs.dgraph.io/get-started/#step-3-run-queries). You can just open [http://localhost:8000](http://localhost:8000) in your browser when Dgraph is running to execute and visualize queries using Ratel.
 
-At the moment simple queries are supported via the DBConnection behaviour. Everything else is done directly via the Protobuf API. This will change. Check the tests for examples.
+At the moment simple queries and mutations are supported via the DBConnection behaviour. Everything else is done directly via the Protobuf API. This will change. Check the tests for examples.
 
 **Example for a query using DBConnection**
 
@@ -115,7 +115,7 @@ json = Poison.decode!(msg.json)
 - [ ] Model response
 - [X] Query builder
 - [X] Query executer
-- [ ] Mutations
+- [X] Mutations
 - [ ] Operations
 - [ ] More intelligent query builder for nested queries
 

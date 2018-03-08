@@ -1,8 +1,8 @@
-defmodule ExDgraph.Query do
-  alias ExDgraph.{Exception, QueryStatement, Transform}
+defmodule ExDgraph.Mutation do
+  alias ExDgraph.{Exception, MutationStatement, QueryStatement, Transform}
 
-  def query!(conn, statement) do
-    case query_commit(conn, statement) do
+  def mutation!(conn, statement) do
+    case mutation_commit(conn, statement) do
       {:error, f} ->
         raise Exception, code: f.code, message: f.message
 
@@ -11,19 +11,19 @@ defmodule ExDgraph.Query do
     end
   end
 
-  def query(conn, statement) do
-    case query_commit(conn, statement) do
+  def mutation(conn, statement) do
+    case mutation_commit(conn, statement) do
       {:error, f} -> {:error, code: f.code, message: f.message}
       r -> {:ok, r}
     end
   end
 
-  defp query_commit(conn, statement) do
+  defp mutation_commit(conn, statement) do
     exec = fn conn ->
-      q = %QueryStatement{statement: statement}
+      q = %MutationStatement{statement: statement}
 
       case DBConnection.execute(conn, q, %{}) do
-        {:ok, resp} -> Transform.transform_query(resp)
+        {:ok, resp} -> Transform.transform_mutation(resp)
         other -> other
       end
     end

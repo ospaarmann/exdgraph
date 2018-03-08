@@ -9,7 +9,7 @@ defmodule ExDgraph do
   @timeout 15_000
 
   alias ExDgraph.Api.{Dgraph, Request, Response, Mutation, Operation}
-  alias ExDgraph.{ConfigAgent, Query, Utils}
+  alias ExDgraph.{ConfigAgent, Mutation, Query, Utils}
 
   @type conn :: DBConnection.conn()
   # @type transaction :: DBConnection.t()
@@ -100,6 +100,24 @@ defmodule ExDgraph do
   """
   @spec query!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
   defdelegate query!(conn, statement), to: Query
+
+  ## Mutation
+  ######################
+
+  @doc """
+  sends the mutation to the server and returns `{:ok, result}` or
+  `{:error, error}` otherwise
+  TODO: Better documentation and type of result
+  """
+  @spec mutation(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  defdelegate mutation(conn, statement), to: Mutation
+
+  @doc """
+  The same as mutation/2 but raises a ExDgraph.Exception if it fails.
+  Returns the server response otherwise.
+  """
+  @spec mutation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
+  defdelegate mutation!(conn, statement), to: Mutation
 
   ## Helpers
   ######################

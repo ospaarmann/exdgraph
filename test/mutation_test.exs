@@ -1,11 +1,11 @@
-defmodule StarWarsSampleTest do
+defmodule MutationTest do
   @moduledoc """
   """
   use ExUnit.Case
   require Logger
   alias ExDgraph.Api.Operation
 
-  alias ExDgraph.{Utils}
+  alias ExDgraph.Utils
 
   @testing_schema "id: string @index(exact).
       name: string @index(exact, term) @count .
@@ -26,11 +26,9 @@ defmodule StarWarsSampleTest do
       # close channel ?
       :ok
     end)
-
-    [channel: channel]
   end
 
-  test "Create & Query", %{channel: channel} do
+  test "Runs a mutation" do
     # Get connection
     conn = ExDgraph.conn()
 
@@ -79,29 +77,6 @@ defmodule StarWarsSampleTest do
     # Build request
     {:ok, mutation_msg} = ExDgraph.mutation(conn, mutation)
 
-    query = """
-      {
-          starwars(func: anyofterms(name, "VI"))
-          {
-            uid
-            name
-            release_date
-            starring
-            {
-              name
-            }
-          }
-      }
-    """
-
-    {:ok, query_msg} = ExDgraph.query(conn, query)
-    res = query_msg.result
-    starwars = res["starwars"]
-    one = List.first(starwars)
-    assert "Star Wars: Episode VI - Return of the Jedi" == one["name"]
-    assert "1983-05-25" == one["release_date"]
-
-    query_msg2 = ExDgraph.query!(conn, query)
-    assert query_msg = query_msg2
+    assert mutation_msg.context.aborted == false
   end
 end
