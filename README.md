@@ -125,7 +125,7 @@ json = Poison.decode!(msg.json)
 ```
 
 ## Running tests
-You need Dgraph running locally on port 9080. A quick way of running any version of Dgraph, is via docker:
+You need Dgraph running locally on port `9080`. A quick way of running any version of Dgraph, is via Docker:
 
 ```
 $ git clone git@github.com:ospaarmann/exdgraph.git
