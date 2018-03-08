@@ -11,7 +11,7 @@ defmodule ExDgraph.Protocol do
   require Logger
 
   alias ExDgraph.Api
-  alias ExDgraph.{MutationStatement, OperationStatement, QueryStatement}
+  alias ExDgraph.{Exception, MutationStatement, OperationStatement, QueryStatement}
 
   @doc "Callback for DBConnection.connect/1"
   def connect(_opts) do
@@ -91,11 +91,15 @@ defmodule ExDgraph.Protocol do
     request = ExDgraph.Api.Request.new(query: statement)
 
     case ExDgraph.Api.Dgraph.Stub.query(channel, request) do
-      {:ok, res} -> {:ok, res, channel}
+      {:ok, res} ->
+        {:ok, res, channel}
+
+      {:error, f} ->
+        raise Exception, code: f.status, message: f.message
     end
   rescue
     e ->
-      {:error, e}
+      {:error, e, channel}
   end
 
   defp execute(%MutationStatement{statement: statement}, params, _, channel) do
@@ -103,20 +107,32 @@ defmodule ExDgraph.Protocol do
     request = ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
 
     case ExDgraph.Api.Dgraph.Stub.mutate(channel, request) do
-      {:ok, res} -> {:ok, res, channel}
+      {:ok, res} ->
+        {:ok, res, channel}
+
+      {:error, f} ->
+        raise Exception, code: f.status, message: f.message
     end
   rescue
     e ->
-      {:error, e}
+      {:error, e, channel}
   end
 
-  defp execute(%OperationStatement{drop_all: drop_all, schema: schema, drop_attr: drop_attr}, params, _, channel) do
+  defp execute(
+         %OperationStatement{drop_all: drop_all, schema: schema, drop_attr: drop_attr},
+         params,
+         _,
+         channel
+       ) do
     operation = Api.Operation.new(drop_all: drop_all, schema: schema, drop_attr: drop_attr)
+
     case ExDgraph.Api.Dgraph.Stub.alter(channel, operation) do
       {:ok, res} -> {:ok, res, channel}
+      {:error, f} ->
+        raise Exception, code: f.status, message: f.message
     end
   rescue
     e ->
-      {:error, e}
+      {:error, e, channel}
   end
 end
