@@ -8,6 +8,8 @@ WORK IN PROGRESS.
 
 > Dgraph is an open source, horizontally scalable and distributed graph database, providing ACID transactions, consistent replication and linearizable reads. [...] Dgraph's goal is to provide Google production level scale and throughput, with low enough latency to be serving real time user queries, over terabytes of structured data. ([Source](https://github.com/dgraph-io/dgraph))
 
+If you want to learn more about Dgraph watch [this talk](https://www.youtube.com/watch?v=cHXbYLNa0qQ).
+
 ## Contribute
 
 This is under development and contributions are very welcome. Please add a comment under [this issue](https://github.com/ospaarmann/exdgraph/issues/4) to discuss how to help. Please also read the roadmap at the bottom of this Readme to see where I stand and what the next steps are.
@@ -141,6 +143,7 @@ $ mix test
 - [X] Connect to Dgraph server via gRPC
 - [X] Implement DBConnection behaviour
 - [ ] Improve test coverage
+- [ ] Add documenation
 - [X] Improve error handling
 - [ ] Implement TLS / authentication
 - [ ] Improve request model via specific module
