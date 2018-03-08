@@ -127,7 +127,9 @@ defmodule ExDgraph.Protocol do
     operation = Api.Operation.new(drop_all: drop_all, schema: schema, drop_attr: drop_attr)
 
     case ExDgraph.Api.Dgraph.Stub.alter(channel, operation) do
-      {:ok, res} -> {:ok, res, channel}
+      {:ok, res} ->
+        {:ok, res, channel}
+
       {:error, f} ->
         raise Exception, code: f.status, message: f.message
     end
