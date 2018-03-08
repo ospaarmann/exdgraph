@@ -10,6 +10,8 @@ defmodule ExDgraph.Protocol do
 
   require Logger
 
+  alias ExDgraph.QueryStatement
+
   @doc "Callback for DBConnection.connect/1"
   def connect(_opts) do
     case GRPC.Stub.connect("localhost:9080") do
@@ -52,7 +54,28 @@ defmodule ExDgraph.Protocol do
   end
 
   @doc "Callback for DBConnection.handle_execute/1"
-  def handle_execute(query, params, opts, state) do
+  def handle_execute(query, params, opts, channel) do
+    # only try to reconnect if the error is about the broken connection
+    with {:disconnect, _, _} <- execute(query, params, opts, channel) do
+      [
+        delay: delay,
+        factor: factor,
+        tries: tries
+      ] = ExDgraph.config(:retry_linear_backoff)
+
+      delay_stream =
+        delay
+        |> lin_backoff(factor)
+        |> cap(ExDgraph.config(:timeout))
+        |> Stream.take(tries)
+
+      retry with: delay_stream do
+        with {:ok, channel} <- connect([]),
+             {:ok, channel} <- checkout(channel) do
+          execute(query, params, opts, channel)
+        end
+      end
+    end
   end
 
   def handle_info(msg, state) do
@@ -61,5 +84,16 @@ defmodule ExDgraph.Protocol do
     end)
 
     {:ok, state}
+  end
+
+  defp execute(%QueryStatement{statement: statement}, params, _, channel) do
+    request = ExDgraph.Api.Request.new(query: statement)
+
+    case ExDgraph.Api.Dgraph.Stub.query(channel, request) do
+      {:ok, res} -> {:ok, res, channel}
+    end
+  rescue
+    e ->
+      {:error, e}
   end
 end

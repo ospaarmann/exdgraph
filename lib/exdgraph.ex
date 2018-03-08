@@ -9,7 +9,7 @@ defmodule ExDgraph do
   @timeout 15_000
 
   alias ExDgraph.Api.{Dgraph, Request, Response, Mutation, Operation}
-  alias ExDgraph.{ConfigAgent, Utils}
+  alias ExDgraph.{ConfigAgent, Query, Utils}
 
   @type conn :: DBConnection.conn()
   # @type transaction :: DBConnection.t()
@@ -82,6 +82,24 @@ defmodule ExDgraph do
 
   @doc false
   def pool_name, do: @pool_name
+
+  ## Query
+  ########################
+
+  @doc """
+  sends the query to the server and returns `{:ok, result}` or
+  `{:error, error}` otherwise
+  TODO: Better documentation and type of result
+  """
+  @spec query(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  defdelegate query(conn, statement), to: Query
+
+  @doc """
+  The same as query/2 but raises a ExDgraph.Exception if it fails.
+  Returns the server response otherwise.
+  """
+  @spec query!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
+  defdelegate query!(conn, statement), to: Query
 
   ## Helpers
   ######################
