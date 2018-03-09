@@ -21,6 +21,28 @@ defmodule ExDgraph.Query do
     end
   end
 
+  @doc """
+  Runs a query agains the database. Either returns {:ok, result} or {:error, error}
+  """
+  def query(conn, search_type, predicate, object, display) do
+    if display != "expand(_all_)" do
+      display = "vertex_type " <> display
+    end
+
+    query = """
+    { nodes(func: #{search_type}(#{predicate}, \"#{object}\")) { #{display} } }
+    """
+
+    query(conn, query)
+  end
+
+  @doc """
+  Runs a query agains the database. Either returns {:ok, result} or {:error, error}
+  """
+  def query(conn, search_type, predicate, object) do
+    query(conn, search_type, predicate, object, "expand(_all_)")
+  end
+
   defp query_commit(conn, statement) do
     exec = fn conn ->
       q = %QueryStatement{statement: statement}

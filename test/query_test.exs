@@ -60,4 +60,36 @@ defmodule ExDgraph.QueryTest do
       ExDgraph.Query.query!(conn, "wrong")
     end
   end
+
+  test "query/4 with query type, predicate and object. returns {:error, error}", %{conn: conn} do
+    {status, query_msg} = ExDgraph.Query.query(conn, "anyofterms", "name", "VI")
+    assert status == :ok
+    res = query_msg.result
+    nodes = res["nodes"]
+    one = List.first(nodes)
+    assert "Star Wars: Episode VI - Return of the Jedi" == one["name"]
+    assert "1983-05-25" == one["release_date"]
+  end
+
+  test "query/5 with query type, predicate, object and properties to display. returns {:error, error}",
+       %{conn: conn} do
+    {status, query_msg} =
+      ExDgraph.Query.query(
+        conn,
+        "anyofterms",
+        "name",
+        "VI",
+        "uid name release_date starring { name }"
+      )
+
+    assert status == :ok
+    res = query_msg.result
+    IO.inspect(res)
+    nodes = res["nodes"]
+    one = List.first(nodes)
+    IO.inspect(nodes)
+    IO.inspect(one)
+    assert "Star Wars: Episode VI - Return of the Jedi" == one["name"]
+    assert "1983-05-25" == one["release_date"]
+  end
 end
