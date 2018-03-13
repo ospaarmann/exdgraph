@@ -205,7 +205,7 @@ defp deps do
 end
 ```
 
-Run mix deps.get to retrieve the new dependencies.
+Run `mix deps.get` to retrieve the new dependencies.
 
 **Create a self-signed certificate for https**
 
