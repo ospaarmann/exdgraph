@@ -46,7 +46,7 @@ defmodule ExDgraph.MixProject do
       {:protobuf, "~> 0.5"},
       {:poison, "~> 3.1"},
       {:poolboy, "~> 1.5.1"},
-      {:db_connection, github: 'elixir-ecto/db_connection'},
+      {:db_connection, "~> 1.1"},
       {:retry, "~> 0.8"},
       {:ex_doc, "~> 0.16", only: :dev, runtime: false},
       {:mix_test_watch, "~> 0.5", only: :dev, runtime: false},
