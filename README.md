@@ -183,6 +183,62 @@ request = ExDgraph.Api.Request.new(query: query)
 json = Poison.decode!(msg.json)
 ```
 
+## Using with Phoenix 1.3
+Since grpc-elixir needs Cowboy 2 you need to upgrade your Phoenix app to work with Cowboy 2.
+
+**Update dependencies in your mix.exs**
+
+Open up the mix.exs file and replace the dependencies with this:
+
+```elixir
+defp deps do
+  [
+    {:phoenix, git: "https://github.com/phoenixframework/phoenix", branch: "master", override: true},
+    {:plug, git: "https://github.com/elixir-plug/plug", branch: "master", override: true},
+    {:phoenix_pubsub, "~> 1.0"},
+    {:phoenix_html, "~> 2.10"},
+    {:phoenix_live_reload, "~> 1.0", only: :dev},
+    {:gettext, "~> 0.11"},
+    {:cowboy, "~> 2.1", override: true},
+    {:ex_dgraph, "~> 0.1.0", github: "ospaarmann/exdgraph", branch: "master"}
+  ]
+end
+```
+
+Run mix deps.get to retrieve the new dependencies.
+
+**Create a self-signed certificate for https**
+
+We will need to do this as, although http2 does not specifically require it, browser do expect http2 connections to be secured over TLS.
+
+In your project folder run:
+
+```
+openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" -keyout priv/server.key -out priv/server.pem
+```
+
+Add the two generated files to .gitignore.
+
+Now we will need to adjust the Endpoint configuration to use a secure connection and use a Cowboy 2 handler
+
+Replace the configuration with the following.
+
+```elixir
+config :my_app, MyAppWeb.Endpoint,
+  debug_errors: true,
+  handler: Phoenix.Endpoint.Cowboy2Handler,
+  code_reloader: true,
+  check_origin: false,
+  watchers: [],
+  https: [port: 4000, keyfile: "priv/server.key", certfile: "priv/server.pem"]
+```
+
+This tells phoenix to listen on port 4000 with the just generated certificate. Furthermore, the handler tells Phoenix to use Cowboy2.
+
+If you now start the application with `mix phx.server` and go to https://localhost:4000 the browser will tell that the connection is not secure with for example NET::ERR_CERT_AUTHORITY_INVALID. This is because the certificate is self signed, and not by a certificate authority. You can open the certificate in for example Keychain on Mac OS X and tell your OS to trust the certificate.
+
+*[Source](https://maartenvanvliet.nl/2017/12/15/upgrading_phoenix_to_http2/)*
+
 ## Running tests
 You need Dgraph running locally on port `9080`. A quick way of running any version of Dgraph, is via Docker:
 
