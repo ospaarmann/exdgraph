@@ -15,7 +15,9 @@ defmodule ExDgraph.Protocol do
 
   @doc "Callback for DBConnection.connect/1"
   def connect(_opts) do
-    case GRPC.Stub.connect("localhost:9080") do
+    host = to_charlist(ExDgraph.config(:hostname))
+    port = ExDgraph.config(:port)
+    case GRPC.Stub.connect("#{host}:#{port}") do
       {:ok, channel} ->
         {:ok, channel}
 
