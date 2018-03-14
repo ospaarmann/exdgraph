@@ -119,6 +119,34 @@ defmodule ExDgraph do
   @spec mutation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
   defdelegate mutation!(conn, statement), to: Mutation
 
+  @doc """
+  Allow you to pass a map to insert into the database. For example
+
+  ```
+  %{
+    name: "Alice",
+    identifier: "alice_json",
+    friends: %{
+      name: "Betty"
+    }
+  }
+  ```
+
+  The function sends the mutation to the server and returns `{:ok, result}` or
+  `{:error, error}` otherwise
+  TODO: Better documentation and type of result
+  """
+  @spec insert_map(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  defdelegate insert_map(conn, map), to: Mutation
+
+  @doc """
+  The same as insert_map/2 but raises a ExDgraph.Exception if it fails.
+  Returns the server response otherwise.
+  TODO: Better documentation and type of result
+  """
+  @spec insert_map!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  defdelegate insert_map!(conn, map), to: Mutation
+
   ## Operation
   ######################
 

@@ -6,7 +6,8 @@ defmodule ExDgraph.TestHelper do
       name: string @index(exact, term) @count .
       age: int @index(int) .
       friend: uid @count .
-      dob: dateTime ."
+      dob: dateTime .
+      identifier: string @index(exact, term) ."
 
   @starwars_creation_mutation """
      _:luke <name> "Luke Skywalker" .
