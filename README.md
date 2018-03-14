@@ -171,6 +171,21 @@ conn = ExDgraph.conn()
 
 ```
 
+**Example for inserting a map**
+
+```elixir
+map = %{
+  name: "Alice",
+  friends: %{
+    name: "Betty"
+  }
+}
+
+conn = ExDgraph.conn()
+ExDgraph.insert_map(conn, map)
+{:ok, mutation_msg} = ExDgraph.insert_map(conn, map)
+```
+
 **Examples for an operation**
 
 ```elixir

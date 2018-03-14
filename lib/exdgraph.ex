@@ -123,13 +123,14 @@ defmodule ExDgraph do
   Allow you to pass a map to insert into the database. For example
 
   ```
-  %{
+  map = %{
     name: "Alice",
-    identifier: "alice_json",
     friends: %{
       name: "Betty"
     }
   }
+
+  ExDgraph.insert_map(conn, map)
   ```
 
   The function sends the mutation to the server and returns `{:ok, result}` or
