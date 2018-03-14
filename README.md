@@ -46,6 +46,12 @@ def application do
 end
 ```
 
+Then, update your dependencies:
+
+```
+$ mix deps.get
+```
+
 **Usage with Phoenix**
 
 Add the configuration to your respective configuration file:
