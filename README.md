@@ -46,6 +46,40 @@ def application do
 end
 ```
 
+**Usage with Phoenix**
+
+Add the configuration to your respective configuration file:
+
+```elixir
+config :ex_dgraph, ExDgraph,
+  hostname: 'localhost',
+  port: 9080,
+  pool_size: 5,
+  max_overflow: 1
+```
+
+And finally don't forget to add ExDgraph to the supervisor tree of your app:
+
+```elixir
+def start(_type, _args) do
+  import Supervisor.Spec
+
+  # Define workers and child supervisors to be supervised
+  children = [
+    # Start the endpoint when the application starts
+    {ExDgraph, Application.get_env(:ex_dgraph, ExDgraph)},
+    supervisor(MyApp.Endpoint, [])
+  ]
+
+  # See https://hexdocs.pm/elixir/Supervisor.html
+  # for other strategies and supported options
+  opts = [strategy: :one_for_one, name: MyApp.Supervisor]
+  Supervisor.start_link(children, opts)
+end
+```
+
+**Important:** Please also note the instructions further down on how to run ExDgraph with Phoenix 1.3. It requires Cowboy 2 which means you have to change some things.
+
 ## Usage
 
 Again, this is work in progress. I'll add more examples on how to use this on the go. So far you can connect to a server and run a simple query. I recommend installing and running Dgraph locally with Docker. You find information on how to do that [here](https://docs.dgraph.io/get-started/#from-docker-image). To use this simple example you first have to [import the example data](https://docs.dgraph.io/get-started/#step-3-run-queries). You can just open [http://localhost:8000](http://localhost:8000) in your browser when Dgraph is running to execute and visualize queries using Ratel.
