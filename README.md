@@ -311,7 +311,8 @@ $ mix test
 - [X] Connect to Dgraph server via gRPC
 - [X] Implement DBConnection behaviour
 - [X] Improve test coverage
-- [ ] Add documenation
+- [ ] Support transactions
+- [ ] Add documentation
 - [X] Improve error handling
 - [ ] Implement TLS / authentication
 - [ ] Improve request model via specific module
