@@ -18,7 +18,9 @@ defmodule ExDgraph.Protocol do
     host = to_charlist(ExDgraph.config(:hostname))
     port = ExDgraph.config(:port)
 
-    case GRPC.Stub.connect("#{host}:#{port}") do
+    opts = set_ssl_opts()
+
+    case GRPC.Stub.connect("#{host}:#{port}", opts) do
       {:ok, channel} ->
         {:ok, channel}
 
@@ -148,5 +150,50 @@ defmodule ExDgraph.Protocol do
   rescue
     e ->
       {:error, e, channel}
+  end
+
+  defp configure_ssl(ssl_opts \\ []) do
+    case ExDgraph.config(:ssl) do
+      true ->
+        add_ssl_file(ssl_opts, :cacertfile)
+      false ->
+        ssl_opts
+    end
+  end
+
+  defp configure_tls_auth(ssl_opts \\ []) do
+    case ExDgraph.config(:tls_client_auth) do
+      true ->
+        ssl_opts
+        |> add_ssl_file(:certfile)
+        |> add_ssl_file(:keyfile)
+        |> add_ssl_file(:certfile)
+      false ->
+        ssl_opts
+    end
+  end
+
+  defp add_ssl_file(ssl_opts \\ [], type) do
+    Keyword.put(ssl_opts, type, validate_tls_file(type, ExDgraph.config(type)))
+  end
+
+  defp validate_tls_file(type, path) do
+    case File.exists?(path) do
+      true ->
+        path
+      false ->
+        raise Exception, code: 2, message: "SSL configuration error. File #{type} '#{ExDgraph.config(type)}' not found"
+    end
+  end
+
+  defp set_ssl_opts(opts \\ []) do
+    if(ExDgraph.config(:ssl) || ExDgraph.config(:tls_client_auth)) do
+      ssl_opts = configure_ssl()
+      |> configure_tls_auth()
+
+      Keyword.put(opts, :cred, GRPC.Credential.new(ssl: ssl_opts))
+    else
+      opts
+    end
   end
 end

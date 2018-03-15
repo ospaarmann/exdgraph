@@ -24,3 +24,6 @@ exdgraph-*.tar
 .DS_Store
 /.elixir_ls
 .elixir_ls
+
+# TLS test certs for testing SSL / TLS authentication
+/tls-test-certs/

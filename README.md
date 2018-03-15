@@ -354,6 +354,50 @@ If you now start the application with `mix phx.server` and go to https://localho
 
 *[Source](https://maartenvanvliet.nl/2017/12/15/upgrading_phoenix_to_http2/)*
 
+## Using SSL
+If you want to connect to Dgraph using SSL you have to set the `:ssl` config to `true` and provide a certificate:
+
+```elixir
+config :ex_dgraph, ExDgraph,
+  # default port considered to be: 9080
+  hostname: 'localhost',
+  pool_size: 5,
+  max_overflow: 1,
+  ssl: true,
+  cacertfile: '/path/to/MyRootCA.pem'
+```
+
+You also have to provide the respective certificates and key to the server and start it with the following options:
+
+```
+command: dgraph server --my=server:7080 --memory_mb=2048 --zero=zero:5080 --tls_on --tls_ca_certs=/path/to/cert/in/container/MyRootCA.pem --tls_cert=/path/to/cert/in/container/MyServer1.pem --tls_cert_key=/path/to/cert/in/container/MyServer1.key
+```
+
+You can read more about how to create self-signed certificates in the Wiki.
+
+## Using TLS client authentication
+If you want to connect to Dgraph and authenticate the client via TLS you have to set the `:tls_client_auth` config to `true` and provide certificates and key:
+
+```elixir
+config :ex_dgraph, ExDgraph,
+  # default port considered to be: 9080
+  hostname: 'localhost',
+  pool_size: 5,
+  max_overflow: 1,
+  ssl: true,
+  cacertfile: '/path/to/MyRootCA.pem',
+  certfile: '/path/to/MyClient1.pem',
+  keyfile: '/path/to/MyClient1.key',
+```
+
+You also have to provide the respective certificates and key to the server and start it with the following options:
+
+```
+command: dgraph server --my=server:7080 --memory_mb=2048 --zero=zero:5080 --tls_on --tls_ca_certs=/path/to/cert/in/container/MyRootCA.pem --tls_cert=/path/to/cert/in/container/MyServer1.pem --tls_cert_key=/path/to/cert/in/container/MyServer1.key --tls_client_auth=REQUIREANDVERIFY
+```
+
+You can read more about how to create self-signed certificates in the Wiki.
+
 ## Running tests
 You need Dgraph running locally on port `9080`. A quick way of running any version of Dgraph, is via Docker:
 
@@ -374,7 +418,7 @@ $ mix test
 - [ ] Support transactions
 - [ ] Add documentation
 - [X] Improve error handling
-- [ ] Implement TLS / authentication
+- [X] Implement TLS / authentication
 - [ ] Improve request model via specific module
 - [ ] Improve response model via specific module
 - [X] Query builder
