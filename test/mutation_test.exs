@@ -62,11 +62,11 @@ defmodule MutationTest do
     assert mutation_msg.context.aborted == false
     query_msg = ExDgraph.Query.query!(conn, @map_insert_check_query)
     res = query_msg.result
-    people = res["people"]
+    people = res[:people]
     alice = List.first(people)
-    assert alice["name"] == "Alice"
-    betty = List.first(alice["friends"])
-    assert betty["name"] == "Betty"
+    assert alice[:name] == "Alice"
+    betty = List.first(alice[:friends])
+    assert betty[:name] == "Betty"
   end
 
   test "insert_map!/2 returns mutation_message", %{conn: conn} do
@@ -74,26 +74,25 @@ defmodule MutationTest do
     assert mutation_msg.context.aborted == false
     query_msg = ExDgraph.Query.query!(conn, @map_insert_check_query)
     res = query_msg.result
-    people = res["people"]
+    people = res[:people]
     alice = List.first(people)
-    assert alice["name"] == "Alice"
-    betty = List.first(alice["friends"])
-    assert betty["name"] == "Betty"
+    assert alice[:name] == "Alice"
+    betty = List.first(alice[:friends])
+    assert betty[:name] == "Betty"
   end
 
   test "insert_map/2 returns result with uids", %{conn: conn} do
     {status, mutation_msg} = ExDgraph.insert_map(conn, @map_insert_mutation)
-    IO.inspect(mutation_msg)
     assert status == :ok
     assert is_map(mutation_msg.result)
     mutation_alice = mutation_msg.result
     mutation_betty = List.first(mutation_alice[:friends])
     query_msg = ExDgraph.Query.query!(conn, @map_insert_check_query)
-    query_people = query_msg.result["people"]
+    query_people = query_msg.result[:people]
     query_alice = List.first(query_people)
-    query_betty = List.first(query_alice["friends"])
-    assert mutation_alice[:uid] == query_alice["uid"]
-    assert mutation_betty[:uid] == query_betty["uid"]
+    query_betty = List.first(query_alice[:friends])
+    assert mutation_alice[:uid] == query_alice[:uid]
+    assert mutation_betty[:uid] == query_betty[:uid]
   end
 
   test "insert_map!/2 returns result with uids", %{conn: conn} do
@@ -102,10 +101,10 @@ defmodule MutationTest do
     mutation_alice = mutation_msg.result
     mutation_betty = List.first(mutation_alice[:friends])
     query_msg = ExDgraph.Query.query!(conn, @map_insert_check_query)
-    query_people = query_msg.result["people"]
+    query_people = query_msg.result[:people]
     query_alice = List.first(query_people)
-    query_betty = List.first(query_alice["friends"])
-    assert mutation_alice[:uid] == query_alice["uid"]
-    assert mutation_betty[:uid] == query_betty["uid"]
+    query_betty = List.first(query_alice[:friends])
+    assert mutation_alice[:uid] == query_alice[:uid]
+    assert mutation_betty[:uid] == query_betty[:uid]
   end
 end

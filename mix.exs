@@ -49,6 +49,7 @@ defmodule ExDgraph.MixProject do
       {:db_connection, "~> 1.1"},
       {:retry, "~> 0.8"},
       {:uuid, "~> 1.1"},
+      {:morphix, "~> 0.2.1"},
       {:ex_doc, "~> 0.16", only: :dev, runtime: false},
       {:mix_test_watch, "~> 0.5", only: :dev, runtime: false},
       {:excoveralls, "~> 0.8", only: :test}
