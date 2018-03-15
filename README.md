@@ -209,6 +209,43 @@ ExDgraph.insert_map(conn, map)
 }
 ```
 
+You can also use `ExDgraph.insert_map/2` to update an existing node or add new edges by passing a `uid` in your map:
+
+```elixir
+user = %{name: "bob", occupation: "dev"}
+{:ok, res} = ExDgraph.insert_map(conn, user)
+
+other_mutation = %{
+  uid: res.result.uid,
+  friends: [%{name: "Paul", occupation: "diver"}, %{name: "Lisa", occupation: "consultant"}]
+}
+
+{:ok, res2} = ExDgraph.insert_map(conn, other_mutation)
+
+# Content of res2. As you can see the original user has been updated.
+
+%{
+  context: %ExDgraph.Api.TxnContext{
+    aborted: false,
+    commit_ts: 3271,
+    keys: [],
+    lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 2905}},
+    start_ts: 3270
+  },
+  result: %{
+    friends: [
+      %{name: "Paul", occupation: "diver", uid: "0x19c6"},
+      %{occupation: "consultant", name: "Lisa", uid: "0x19c7"}
+    ],
+    uid: "0x19c5"
+  },
+  uids: %{
+    "7086397d-aa39-4257-a70e-3ad4e63abc14" => "0x19c7",
+    "a66d77fa-afc0-478f-b838-ea1a97a20c11" => "0x19c6"
+  }
+}
+```
+
 **Examples for an operation**
 
 ```elixir

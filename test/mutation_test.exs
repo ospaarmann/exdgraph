@@ -107,4 +107,17 @@ defmodule MutationTest do
     assert mutation_alice[:uid] == query_alice[:uid]
     assert mutation_betty[:uid] == query_betty[:uid]
   end
+
+  test "insert_map/2 updates a node if a uid is present and returns the uid again", %{conn: conn} do
+    user = %{name: "bob", occupation: "dev"}
+    {:ok, res} = ExDgraph.insert_map(conn, user)
+
+    other_mutation = %{
+      uid: res.result.uid,
+      friends: [%{name: "Paul", occupation: "diver"}, %{name: "Lisa", gender: "female"}]
+    }
+
+    {:ok, res2} = ExDgraph.insert_map(conn, other_mutation)
+    assert res.result.uid == res2.result.uid
+  end
 end

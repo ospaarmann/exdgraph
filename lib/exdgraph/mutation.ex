@@ -93,7 +93,12 @@ defmodule ExDgraph.Mutation do
 
   defp replace_tmp_uids(map, uids) when is_map(map) do
     map
-    |> Map.update!(:uid, &uids[String.replace_leading(&1, "_:", "")])
+    |> Map.update(:uid, map[:uid], fn existing_uuid ->
+      case String.slice(existing_uuid, 0, 2) == "_:" do
+        true -> uids[String.replace_leading(existing_uuid, "_:", "")]
+        false -> existing_uuid
+      end
+    end)
     |> Enum.reduce(%{}, fn
       {key, a_map = %{}}, a -> Map.merge(a, %{key => replace_tmp_uids(a_map, uids)})
       {key, not_a_map}, a -> Map.merge(a, %{key => replace_tmp_uids(not_a_map, uids)})
