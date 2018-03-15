@@ -156,6 +156,7 @@ defmodule ExDgraph.Protocol do
     case ExDgraph.config(:ssl) do
       true ->
         add_ssl_file(ssl_opts, :cacertfile)
+
       false ->
         ssl_opts
     end
@@ -168,6 +169,7 @@ defmodule ExDgraph.Protocol do
         |> add_ssl_file(:certfile)
         |> add_ssl_file(:keyfile)
         |> add_ssl_file(:certfile)
+
       false ->
         ssl_opts
     end
@@ -181,15 +183,19 @@ defmodule ExDgraph.Protocol do
     case File.exists?(path) do
       true ->
         path
+
       false ->
-        raise Exception, code: 2, message: "SSL configuration error. File #{type} '#{ExDgraph.config(type)}' not found"
+        raise Exception,
+          code: 2,
+          message: "SSL configuration error. File #{type} '#{ExDgraph.config(type)}' not found"
     end
   end
 
   defp set_ssl_opts(opts \\ []) do
-    if(ExDgraph.config(:ssl) || ExDgraph.config(:tls_client_auth)) do
-      ssl_opts = configure_ssl()
-      |> configure_tls_auth()
+    if ExDgraph.config(:ssl) || ExDgraph.config(:tls_client_auth) do
+      ssl_opts =
+        configure_ssl()
+        |> configure_tls_auth()
 
       Keyword.put(opts, :cred, GRPC.Credential.new(ssl: ssl_opts))
     else
