@@ -373,7 +373,7 @@ You also have to provide the respective certificates and key to the server and s
 command: dgraph server --my=server:7080 --memory_mb=2048 --zero=zero:5080 --tls_on --tls_ca_certs=/path/to/cert/in/container/MyRootCA.pem --tls_cert=/path/to/cert/in/container/MyServer1.pem --tls_cert_key=/path/to/cert/in/container/MyServer1.key
 ```
 
-You can read more about how to create self-signed certificates in the Wiki.
+You can read more about how to create self-signed certificates in the [Wiki](https://github.com/ospaarmann/exdgraph/wiki).
 
 ## Using TLS client authentication
 If you want to connect to Dgraph and authenticate the client via TLS you have to set the `:tls_client_auth` config to `true` and provide certificates and key:
@@ -396,7 +396,7 @@ You also have to provide the respective certificates and key to the server and s
 command: dgraph server --my=server:7080 --memory_mb=2048 --zero=zero:5080 --tls_on --tls_ca_certs=/path/to/cert/in/container/MyRootCA.pem --tls_cert=/path/to/cert/in/container/MyServer1.pem --tls_cert_key=/path/to/cert/in/container/MyServer1.key --tls_client_auth=REQUIREANDVERIFY
 ```
 
-You can read more about how to create self-signed certificates in the Wiki.
+You can read more about how to create self-signed certificates in the [Wiki](https://github.com/ospaarmann/exdgraph/wiki).
 
 ## Running tests
 You need Dgraph running locally on port `9080`. A quick way of running any version of Dgraph, is via Docker:
