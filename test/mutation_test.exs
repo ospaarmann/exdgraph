@@ -8,9 +8,11 @@ defmodule MutationTest do
   @map_insert_mutation %{
     name: "Alice",
     identifier: "alice_json",
-    friends: %{
-      name: "Betty"
-    }
+    friends: [
+      %{
+        name: "Betty"
+      }
+    ]
   }
 
   @map_insert_check_query """
@@ -21,7 +23,8 @@ defmodule MutationTest do
           name
           friends
           {
-            name
+            name,
+            uid
           }
         }
     }
@@ -52,7 +55,7 @@ defmodule MutationTest do
     assert error[:code] == 2
   end
 
-  # TODO: Take care of updates via uid 
+  # TODO: Take care of updates via uid
   test "insert_map/2 returns {:ok, mutation_msg} for correct mutation", %{conn: conn} do
     {status, mutation_msg} = ExDgraph.insert_map(conn, @map_insert_mutation)
     assert status == :ok
@@ -76,5 +79,33 @@ defmodule MutationTest do
     assert alice["name"] == "Alice"
     betty = List.first(alice["friends"])
     assert betty["name"] == "Betty"
+  end
+
+  test "insert_map/2 returns result with uids", %{conn: conn} do
+    {status, mutation_msg} = ExDgraph.insert_map(conn, @map_insert_mutation)
+    IO.inspect(mutation_msg)
+    assert status == :ok
+    assert is_map(mutation_msg.result)
+    mutation_alice = mutation_msg.result
+    mutation_betty = List.first(mutation_alice[:friends])
+    query_msg = ExDgraph.Query.query!(conn, @map_insert_check_query)
+    query_people = query_msg.result["people"]
+    query_alice = List.first(query_people)
+    query_betty = List.first(query_alice["friends"])
+    assert mutation_alice[:uid] == query_alice["uid"]
+    assert mutation_betty[:uid] == query_betty["uid"]
+  end
+
+  test "insert_map!/2 returns result with uids", %{conn: conn} do
+    mutation_msg = ExDgraph.insert_map!(conn, @map_insert_mutation)
+    assert is_map(mutation_msg.result)
+    mutation_alice = mutation_msg.result
+    mutation_betty = List.first(mutation_alice[:friends])
+    query_msg = ExDgraph.Query.query!(conn, @map_insert_check_query)
+    query_people = query_msg.result["people"]
+    query_alice = List.first(query_people)
+    query_betty = List.first(query_alice["friends"])
+    assert mutation_alice[:uid] == query_alice["uid"]
+    assert mutation_betty[:uid] == query_betty["uid"]
   end
 end

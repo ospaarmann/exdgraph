@@ -17,6 +17,7 @@ defmodule ExDgraph.Protocol do
   def connect(_opts) do
     host = to_charlist(ExDgraph.config(:hostname))
     port = ExDgraph.config(:port)
+
     case GRPC.Stub.connect("#{host}:#{port}") do
       {:ok, channel} ->
         {:ok, channel}

@@ -48,6 +48,7 @@ defmodule ExDgraph.MixProject do
       {:poolboy, "~> 1.5.1"},
       {:db_connection, "~> 1.1"},
       {:retry, "~> 0.8"},
+      {:uuid, "~> 1.1"},
       {:ex_doc, "~> 0.16", only: :dev, runtime: false},
       {:mix_test_watch, "~> 0.5", only: :dev, runtime: false},
       {:excoveralls, "~> 0.8", only: :test}

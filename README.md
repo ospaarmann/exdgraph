@@ -186,6 +186,29 @@ ExDgraph.insert_map(conn, map)
 {:ok, mutation_msg} = ExDgraph.insert_map(conn, map)
 ```
 
+`ExDgraph.insert_map/2` returns the data you have passed it but populates every node in your map with the respective uids returned from Dgraph. For example:
+
+```elixir
+%{
+  context: %ExDgraph.Api.TxnContext{
+    aborted: false,
+    commit_ts: 1703,
+    keys: [],
+    lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 1508}},
+    start_ts: 1702
+  },
+  result: %{
+    friends: [%{name: "Betty", uid: "0xd82"}],
+    name: "Alice",
+    uid: "0xd81"
+  },
+  uids: %{
+    "763d617a-af34-4ff9-9863-e072bf85146d" => "0xd82",
+    "e94713a5-54a7-4e36-8ab8-0d3019409892" => "0xd81"
+  }
+}
+```
+
 **Examples for an operation**
 
 ```elixir
