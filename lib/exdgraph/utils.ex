@@ -13,6 +13,11 @@ defmodule ExDgraph.Utils do
     |> Keyword.put_new(:max_overflow, 2)
     |> Keyword.put_new(:timeout, 15_000)
     |> Keyword.put_new(:pool, DBConnection.Poolboy)
+    |> Keyword.put_new(:ssl, false)
+    |> Keyword.put_new(:tls_client_auth, false)
+    |> Keyword.put_new(:certfile, nil)
+    |> Keyword.put_new(:keyfile, nil)
+    |> Keyword.put_new(:cacertfile, nil)
     |> Keyword.put_new(:retry_linear_backoff, delay: 150, factor: 2, tries: 3)
     |> Enum.reject(fn {_k, v} -> is_nil(v) end)
   end

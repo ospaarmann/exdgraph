@@ -34,10 +34,10 @@ defmodule ExDgraph.QueryTest do
     {status, query_msg} = ExDgraph.Query.query(conn, @sample_query)
     assert status == :ok
     res = query_msg.result
-    starwars = res["starwars"]
+    starwars = res[:starwars]
     one = List.first(starwars)
-    assert "Star Wars: Episode VI - Return of the Jedi" == one["name"]
-    assert "1983-05-25" == one["release_date"]
+    assert "Star Wars: Episode VI - Return of the Jedi" == one[:name]
+    assert "1983-05-25" == one[:release_date]
   end
 
   test "query/2 with wrong query returns {:error, error}", %{conn: conn} do
@@ -49,10 +49,10 @@ defmodule ExDgraph.QueryTest do
   test "query!/2 with correct query returns query_msg", %{conn: conn} do
     query_msg = ExDgraph.Query.query!(conn, @sample_query)
     res = query_msg.result
-    starwars = res["starwars"]
+    starwars = res[:starwars]
     one = List.first(starwars)
-    assert "Star Wars: Episode VI - Return of the Jedi" == one["name"]
-    assert "1983-05-25" == one["release_date"]
+    assert "Star Wars: Episode VI - Return of the Jedi" == one[:name]
+    assert "1983-05-25" == one[:release_date]
   end
 
   test "query!/2 raises ExDgraph.Exception", %{conn: conn} do

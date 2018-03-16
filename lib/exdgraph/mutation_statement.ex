@@ -1,5 +1,5 @@
 defmodule ExDgraph.MutationStatement do
-  defstruct statement: ""
+  defstruct statement: "", set_json: ""
 end
 
 defimpl DBConnection.Query, for: ExDgraph.MutationStatement do

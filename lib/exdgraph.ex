@@ -119,6 +119,58 @@ defmodule ExDgraph do
   @spec mutation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
   defdelegate mutation!(conn, statement), to: Mutation
 
+  @doc """
+  Allow you to pass a map to insert into the database. For example
+
+  ```
+  map = %{
+    name: "Alice",
+    friends: %{
+      name: "Betty"
+    }
+  }
+
+  ExDgraph.set_map(conn, map)
+  ```
+
+  The function sends the mutation to the server and returns `{:ok, result}` or
+  `{:error, error}` otherwise. The `result` is a map of all values you have passed in
+  but with the field `uid` populated from the database.
+
+  Example result:
+
+  ```
+  %{
+    context: %ExDgraph.Api.TxnContext{
+      aborted: false,
+      commit_ts: 1703,
+      keys: [],
+      lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 1508}},
+      start_ts: 1702
+    },
+    result: %{
+      friends: [%{name: "Betty", uid: "0xd82"}],
+      name: "Alice",
+      uid: "0xd81"
+    },
+    uids: %{
+      "763d617a-af34-4ff9-9863-e072bf85146d" => "0xd82",
+      "e94713a5-54a7-4e36-8ab8-0d3019409892" => "0xd81"
+    }
+  }
+  ```
+
+  """
+  @spec set_map(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  defdelegate set_map(conn, map), to: Mutation
+
+  @doc """
+  The same as set_map/2 but raises a ExDgraph.Exception if it fails.
+  Returns the server response otherwise.
+  """
+  @spec set_map!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  defdelegate set_map!(conn, map), to: Mutation
+
   ## Operation
   ######################
 

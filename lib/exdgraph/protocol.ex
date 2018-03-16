@@ -15,7 +15,12 @@ defmodule ExDgraph.Protocol do
 
   @doc "Callback for DBConnection.connect/1"
   def connect(_opts) do
-    case GRPC.Stub.connect("localhost:9080") do
+    host = to_charlist(ExDgraph.config(:hostname))
+    port = ExDgraph.config(:port)
+
+    opts = set_ssl_opts()
+
+    case GRPC.Stub.connect("#{host}:#{port}", opts) do
       {:ok, channel} ->
         {:ok, channel}
 
@@ -102,9 +107,18 @@ defmodule ExDgraph.Protocol do
       {:error, e, channel}
   end
 
-  defp execute(%MutationStatement{statement: statement}, params, _, channel) do
+  defp execute(%MutationStatement{statement: statement, set_json: set_json}, params, _, channel) do
     # Build request
-    request = ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
+    cond do
+      statement != "" and set_json == "" ->
+        request = ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
+
+      set_json != "" and set_json != "" ->
+        request = ExDgraph.Api.Mutation.new(set_json: set_json, commit_now: true)
+
+      statement != "" and set_json != "" ->
+        raise Exception, code: 2, message: "Both set_json and statement defined"
+    end
 
     case ExDgraph.Api.Dgraph.Stub.mutate(channel, request) do
       {:ok, res} ->
@@ -136,5 +150,56 @@ defmodule ExDgraph.Protocol do
   rescue
     e ->
       {:error, e, channel}
+  end
+
+  defp configure_ssl(ssl_opts \\ []) do
+    case ExDgraph.config(:ssl) do
+      true ->
+        add_ssl_file(ssl_opts, :cacertfile)
+
+      false ->
+        ssl_opts
+    end
+  end
+
+  defp configure_tls_auth(ssl_opts \\ []) do
+    case ExDgraph.config(:tls_client_auth) do
+      true ->
+        ssl_opts
+        |> add_ssl_file(:certfile)
+        |> add_ssl_file(:keyfile)
+        |> add_ssl_file(:certfile)
+
+      false ->
+        ssl_opts
+    end
+  end
+
+  defp add_ssl_file(ssl_opts \\ [], type) do
+    Keyword.put(ssl_opts, type, validate_tls_file(type, ExDgraph.config(type)))
+  end
+
+  defp validate_tls_file(type, path) do
+    case File.exists?(path) do
+      true ->
+        path
+
+      false ->
+        raise Exception,
+          code: 2,
+          message: "SSL configuration error. File #{type} '#{ExDgraph.config(type)}' not found"
+    end
+  end
+
+  defp set_ssl_opts(opts \\ []) do
+    if ExDgraph.config(:ssl) || ExDgraph.config(:tls_client_auth) do
+      ssl_opts =
+        configure_ssl()
+        |> configure_tls_auth()
+
+      Keyword.put(opts, :cred, GRPC.Credential.new(ssl: ssl_opts))
+    else
+      opts
+    end
   end
 end

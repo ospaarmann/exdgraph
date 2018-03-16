@@ -2,7 +2,7 @@
 
 **This is work in progress and not functional as of now. If you want to help, please drop me a message. Any help is greatly appreciated!**
 
-ExDgraph is a gRPC based client for the [Dgraph](https://github.com/dgraph-io/dgraph) database. It uses the [DBConnection](https://hexdocs.pm/db_connection/DBConnection.html) behaviour to support transactions and connection pooling via [Poolboy](https://github.com/devinus/poolboy).
+ExDgraph is a gRPC based client for the [Dgraph](https://github.com/dgraph-io/dgraph) database. It uses the [DBConnection](https://hexdocs.pm/db_connection/DBConnection.html) behaviour to support transactions and connection pooling via [Poolboy](https://github.com/devinus/poolboy). Works with Dgraph v1.0.4 (latest).
 
 WORK IN PROGRESS.
 
@@ -45,6 +45,46 @@ def application do
   ]
 end
 ```
+
+Then, update your dependencies:
+
+```
+$ mix deps.get
+```
+
+**Usage with Phoenix**
+
+Add the configuration to your respective configuration file:
+
+```elixir
+config :ex_dgraph, ExDgraph,
+  hostname: 'localhost',
+  port: 9080,
+  pool_size: 5,
+  max_overflow: 1
+```
+
+And finally don't forget to add ExDgraph to the supervisor tree of your app:
+
+```elixir
+def start(_type, _args) do
+  import Supervisor.Spec
+
+  # Define workers and child supervisors to be supervised
+  children = [
+    # Start the endpoint when the application starts
+    {ExDgraph, Application.get_env(:ex_dgraph, ExDgraph)},
+    supervisor(MyApp.Endpoint, [])
+  ]
+
+  # See https://hexdocs.pm/elixir/Supervisor.html
+  # for other strategies and supported options
+  opts = [strategy: :one_for_one, name: MyApp.Supervisor]
+  Supervisor.start_link(children, opts)
+end
+```
+
+**Important:** Please also note the instructions further down on how to run ExDgraph with Phoenix 1.3. It requires Cowboy 2 which means you have to change some things.
 
 ## Usage
 
@@ -131,6 +171,81 @@ conn = ExDgraph.conn()
 
 ```
 
+**Example for inserting a map**
+
+```elixir
+map = %{
+  name: "Alice",
+  friends: %{
+    name: "Betty"
+  }
+}
+
+conn = ExDgraph.conn()
+ExDgraph.set_map(conn, map)
+{:ok, mutation_msg} = ExDgraph.set_map(conn, map)
+```
+
+`ExDgraph.set_map/2` returns the data you have passed it but populates every node in your map with the respective uids returned from Dgraph. For example:
+
+```elixir
+%{
+  context: %ExDgraph.Api.TxnContext{
+    aborted: false,
+    commit_ts: 1703,
+    keys: [],
+    lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 1508}},
+    start_ts: 1702
+  },
+  result: %{
+    friends: [%{name: "Betty", uid: "0xd82"}],
+    name: "Alice",
+    uid: "0xd81"
+  },
+  uids: %{
+    "763d617a-af34-4ff9-9863-e072bf85146d" => "0xd82",
+    "e94713a5-54a7-4e36-8ab8-0d3019409892" => "0xd81"
+  }
+}
+```
+
+You can also use `ExDgraph.set_map/2` to update an existing node or add new edges by passing a `uid` in your map:
+
+```elixir
+user = %{name: "bob", occupation: "dev"}
+{:ok, res} = ExDgraph.set_map(conn, user)
+
+other_mutation = %{
+  uid: res.result.uid,
+  friends: [%{name: "Paul", occupation: "diver"}, %{name: "Lisa", occupation: "consultant"}]
+}
+
+{:ok, res2} = ExDgraph.set_map(conn, other_mutation)
+
+# Content of res2. As you can see the original user has been updated.
+
+%{
+  context: %ExDgraph.Api.TxnContext{
+    aborted: false,
+    commit_ts: 3271,
+    keys: [],
+    lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 2905}},
+    start_ts: 3270
+  },
+  result: %{
+    friends: [
+      %{name: "Paul", occupation: "diver", uid: "0x19c6"},
+      %{occupation: "consultant", name: "Lisa", uid: "0x19c7"}
+    ],
+    uid: "0x19c5"
+  },
+  uids: %{
+    "7086397d-aa39-4257-a70e-3ad4e63abc14" => "0x19c7",
+    "a66d77fa-afc0-478f-b838-ea1a97a20c11" => "0x19c6"
+  }
+}
+```
+
 **Examples for an operation**
 
 ```elixir
@@ -183,6 +298,106 @@ request = ExDgraph.Api.Request.new(query: query)
 json = Poison.decode!(msg.json)
 ```
 
+## Using with Phoenix 1.3
+Since grpc-elixir needs Cowboy 2 you need to upgrade your Phoenix app to work with Cowboy 2.
+
+**Update dependencies in your mix.exs**
+
+Open up the mix.exs file and replace the dependencies with this:
+
+```elixir
+defp deps do
+  [
+    {:phoenix, git: "https://github.com/phoenixframework/phoenix", branch: "master", override: true},
+    {:plug, git: "https://github.com/elixir-plug/plug", branch: "master", override: true},
+    {:phoenix_pubsub, "~> 1.0"},
+    {:phoenix_html, "~> 2.10"},
+    {:phoenix_live_reload, "~> 1.0", only: :dev},
+    {:gettext, "~> 0.11"},
+    {:cowboy, "~> 2.1", override: true},
+    {:ex_dgraph, "~> 0.1.0", github: "ospaarmann/exdgraph", branch: "master"}
+  ]
+end
+```
+
+Run `mix deps.get` to retrieve the new dependencies.
+
+**Create a self-signed certificate for https**
+
+We will need to do this as, although http2 does not specifically require it, browser do expect http2 connections to be secured over TLS.
+
+In your project folder run:
+
+```
+openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" -keyout priv/server.key -out priv/server.pem
+```
+
+Add the two generated files to .gitignore.
+
+Now we will need to adjust the Endpoint configuration to use a secure connection and use a Cowboy 2 handler
+
+Replace the configuration with the following.
+
+```elixir
+config :my_app, MyAppWeb.Endpoint,
+  debug_errors: true,
+  handler: Phoenix.Endpoint.Cowboy2Handler,
+  code_reloader: true,
+  check_origin: false,
+  watchers: [],
+  https: [port: 4000, keyfile: "priv/server.key", certfile: "priv/server.pem"]
+```
+
+This tells phoenix to listen on port 4000 with the just generated certificate. Furthermore, the handler tells Phoenix to use Cowboy2.
+
+If you now start the application with `mix phx.server` and go to https://localhost:4000 the browser will tell that the connection is not secure with for example NET::ERR_CERT_AUTHORITY_INVALID. This is because the certificate is self signed, and not by a certificate authority. You can open the certificate in for example Keychain on Mac OS X and tell your OS to trust the certificate.
+
+*[Source](https://maartenvanvliet.nl/2017/12/15/upgrading_phoenix_to_http2/)*
+
+## Using SSL
+If you want to connect to Dgraph using SSL you have to set the `:ssl` config to `true` and provide a certificate:
+
+```elixir
+config :ex_dgraph, ExDgraph,
+  # default port considered to be: 9080
+  hostname: 'localhost',
+  pool_size: 5,
+  max_overflow: 1,
+  ssl: true,
+  cacertfile: '/path/to/MyRootCA.pem'
+```
+
+You also have to provide the respective certificates and key to the server and start it with the following options:
+
+```
+command: dgraph server --my=server:7080 --memory_mb=2048 --zero=zero:5080 --tls_on --tls_ca_certs=/path/to/cert/in/container/MyRootCA.pem --tls_cert=/path/to/cert/in/container/MyServer1.pem --tls_cert_key=/path/to/cert/in/container/MyServer1.key
+```
+
+You can read more about how to create self-signed certificates in the [Wiki](https://github.com/ospaarmann/exdgraph/wiki).
+
+## Using TLS client authentication
+If you want to connect to Dgraph and authenticate the client via TLS you have to set the `:tls_client_auth` config to `true` and provide certificates and key:
+
+```elixir
+config :ex_dgraph, ExDgraph,
+  # default port considered to be: 9080
+  hostname: 'localhost',
+  pool_size: 5,
+  max_overflow: 1,
+  ssl: true,
+  cacertfile: '/path/to/MyRootCA.pem',
+  certfile: '/path/to/MyClient1.pem',
+  keyfile: '/path/to/MyClient1.key',
+```
+
+You also have to provide the respective certificates and key to the server and start it with the following options:
+
+```
+command: dgraph server --my=server:7080 --memory_mb=2048 --zero=zero:5080 --tls_on --tls_ca_certs=/path/to/cert/in/container/MyRootCA.pem --tls_cert=/path/to/cert/in/container/MyServer1.pem --tls_cert_key=/path/to/cert/in/container/MyServer1.key --tls_client_auth=REQUIREANDVERIFY
+```
+
+You can read more about how to create self-signed certificates in the [Wiki](https://github.com/ospaarmann/exdgraph/wiki).
+
 ## Running tests
 You need Dgraph running locally on port `9080`. A quick way of running any version of Dgraph, is via Docker:
 
@@ -200,9 +415,10 @@ $ mix test
 - [X] Connect to Dgraph server via gRPC
 - [X] Implement DBConnection behaviour
 - [X] Improve test coverage
-- [ ] Add documenation
+- [ ] Support transactions
+- [ ] Add documentation
 - [X] Improve error handling
-- [ ] Implement TLS / authentication
+- [X] Implement TLS / authentication
 - [ ] Improve request model via specific module
 - [ ] Improve response model via specific module
 - [X] Query builder
