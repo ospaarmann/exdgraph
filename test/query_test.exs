@@ -62,13 +62,34 @@ defmodule ExDgraph.QueryTest do
   end
 
   test "query/4 with query type, predicate and object. returns {:error, error}", %{conn: conn} do
-    {status, query_msg} = ExDgraph.Query.query(conn, "anyofterms", "name", "VI")
+    {status, query_msg} = ExDgraph.Query.query(conn, "anyofterms", {"name", "VI"})
     assert status == :ok
     res = query_msg.result
-    nodes = res["nodes"]
+    nodes = res[:nodes]
     one = List.first(nodes)
-    assert "Star Wars: Episode VI - Return of the Jedi" == one["name"]
-    assert "1983-05-25" == one["release_date"]
+    assert "Star Wars: Episode VI - Return of the Jedi" == one[:name]
+    assert "1983-05-25" == one[:release_date]
+  end
+
+  test "query/4 with query type (as atom), predicate and object. returns {:error, error}", %{conn: conn} do
+    {status, query_msg} = ExDgraph.Query.query(conn, :anyofterms, {"name", "VI"})
+    assert status == :ok
+    res = query_msg.result
+    nodes = res[:nodes]
+    one = List.first(nodes)
+    assert "Star Wars: Episode VI - Return of the Jedi" == one[:name]
+    assert "1983-05-25" == one[:release_date]
+  end
+
+  test "query/4 with query type uid. returns {:error, error}", %{conn: conn} do
+    {status, mutation_msg} = ExDgraph.mutation(conn, "_:new <name> \"Duffy\" .")
+    uid = mutation_msg[:uids]["new"]
+    {status, query_msg} = ExDgraph.Query.query(conn, "uid", uid)
+    assert status == :ok
+    res = query_msg.result
+    nodes = res[:nodes]
+    one = List.first(nodes)
+    assert "Duffy" == one[:name]
   end
 
   test "query/5 with query type, predicate, object and properties to display. returns {:error, error}",
@@ -77,19 +98,15 @@ defmodule ExDgraph.QueryTest do
       ExDgraph.Query.query(
         conn,
         "anyofterms",
-        "name",
-        "VI",
+        {"name", "VI"},
         "uid name release_date starring { name }"
       )
 
     assert status == :ok
     res = query_msg.result
-    IO.inspect(res)
-    nodes = res["nodes"]
+    nodes = res[:nodes]
     one = List.first(nodes)
-    IO.inspect(nodes)
-    IO.inspect(one)
-    assert "Star Wars: Episode VI - Return of the Jedi" == one["name"]
-    assert "1983-05-25" == one["release_date"]
+    assert "Star Wars: Episode VI - Return of the Jedi" == one[:name]
+    assert "1983-05-25" == one[:release_date]
   end
 end
