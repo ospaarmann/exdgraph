@@ -130,7 +130,7 @@ defmodule ExDgraph do
     }
   }
 
-  ExDgraph.insert_map(conn, map)
+  ExDgraph.set_map(conn, map)
   ```
 
   The function sends the mutation to the server and returns `{:ok, result}` or
@@ -161,15 +161,15 @@ defmodule ExDgraph do
   ```
 
   """
-  @spec insert_map(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
-  defdelegate insert_map(conn, map), to: Mutation
+  @spec set_map(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  defdelegate set_map(conn, map), to: Mutation
 
   @doc """
-  The same as insert_map/2 but raises a ExDgraph.Exception if it fails.
+  The same as set_map/2 but raises a ExDgraph.Exception if it fails.
   Returns the server response otherwise.
   """
-  @spec insert_map!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
-  defdelegate insert_map!(conn, map), to: Mutation
+  @spec set_map!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  defdelegate set_map!(conn, map), to: Mutation
 
   ## Operation
   ######################

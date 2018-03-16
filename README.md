@@ -182,11 +182,11 @@ map = %{
 }
 
 conn = ExDgraph.conn()
-ExDgraph.insert_map(conn, map)
-{:ok, mutation_msg} = ExDgraph.insert_map(conn, map)
+ExDgraph.set_map(conn, map)
+{:ok, mutation_msg} = ExDgraph.set_map(conn, map)
 ```
 
-`ExDgraph.insert_map/2` returns the data you have passed it but populates every node in your map with the respective uids returned from Dgraph. For example:
+`ExDgraph.set_map/2` returns the data you have passed it but populates every node in your map with the respective uids returned from Dgraph. For example:
 
 ```elixir
 %{
@@ -209,18 +209,18 @@ ExDgraph.insert_map(conn, map)
 }
 ```
 
-You can also use `ExDgraph.insert_map/2` to update an existing node or add new edges by passing a `uid` in your map:
+You can also use `ExDgraph.set_map/2` to update an existing node or add new edges by passing a `uid` in your map:
 
 ```elixir
 user = %{name: "bob", occupation: "dev"}
-{:ok, res} = ExDgraph.insert_map(conn, user)
+{:ok, res} = ExDgraph.set_map(conn, user)
 
 other_mutation = %{
   uid: res.result.uid,
   friends: [%{name: "Paul", occupation: "diver"}, %{name: "Lisa", occupation: "consultant"}]
 }
 
-{:ok, res2} = ExDgraph.insert_map(conn, other_mutation)
+{:ok, res2} = ExDgraph.set_map(conn, other_mutation)
 
 # Content of res2. As you can see the original user has been updated.
 

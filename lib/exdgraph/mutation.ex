@@ -18,21 +18,21 @@ defmodule ExDgraph.Mutation do
     end
   end
 
-  def insert_map(conn, map) do
+  def set_map(conn, map) do
     map_with_tmp_uids = insert_tmp_uids(map)
     json = Poison.encode!(map_with_tmp_uids)
 
-    case insert_map_commit(conn, json, map_with_tmp_uids) do
+    case set_map_commit(conn, json, map_with_tmp_uids) do
       {:error, f} -> {:error, code: f.code, message: f.message}
       r -> {:ok, r}
     end
   end
 
-  def insert_map!(conn, map) do
+  def set_map!(conn, map) do
     map_with_tmp_uids = insert_tmp_uids(map)
     json = Poison.encode!(map_with_tmp_uids)
 
-    case insert_map_commit(conn, json, map_with_tmp_uids) do
+    case set_map_commit(conn, json, map_with_tmp_uids) do
       {:error, f} ->
         raise Exception, code: f.code, message: f.message
 
@@ -55,7 +55,7 @@ defmodule ExDgraph.Mutation do
     DBConnection.run(conn, exec, run_opts())
   end
 
-  defp insert_map_commit(conn, json, map_with_tmp_uids) do
+  defp set_map_commit(conn, json, map_with_tmp_uids) do
     exec = fn conn ->
       q = %MutationStatement{set_json: json}
 
