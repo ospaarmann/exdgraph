@@ -500,20 +500,23 @@ defmodule ExDgraph do
 
   ## Examples
 
-      iex> query_statement = \"\"\"
-      ...> {
-      ...>    starwars(func: anyofterms(name, "VI"))
-      ...>    {
-      ...>      uid
-      ...>      name
-      ...>      release_date
-      ...>      starring
-      ...>      {
-      ...>        name
-      ...>      }
-      ...>    }
-      ...>  }
-      ...>  \"\"\"
+  ```elixir
+  query_statement = \"\"\"
+    {
+       starwars(func: anyofterms(name, "VI"))
+       {
+         uid
+         name
+         release_date
+         starring
+         {
+           name
+         }
+       }
+     }
+  \"\"\"
+  ```
+
       iex> ExDgraph.query(conn, query_statement)
       %{:ok,
         %{
@@ -543,7 +546,7 @@ defmodule ExDgraph do
       }
 
       iex> ExDgraph.query(conn, invalid_statement)
-      {:error, [code: 2, message: "while lexing wrong: Invalid operation type: wrong"]}
+      {:error, [code: 2, message: "while lexing invalid_statement: Invalid operation type: invalid_statement"]}
 
   """
   @spec query(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
@@ -643,52 +646,47 @@ defmodule ExDgraph do
   defdelegate mutation!(conn, statement), to: Mutation
 
   @doc """
-  Allow you to pass a map to insert into the database. For example
+  Allow you to pass a map to insert into the database. The function sends the mutation to the server and returns `{:ok, result}` or `{:error, error}` otherwise. Internally it uses Dgraphs `set_json`.
+  The `result` is a map of all values you have passed in but with the field `uid` populated from the database.
 
-  ```
+  ## Examples
+
+  ```elixir
   map = %{
-    name: "Alice",
-    friends: %{
-      name: "Betty"
-    }
-  }
-
-  ExDgraph.set_map(conn, map)
-  ```
-
-  The function sends the mutation to the server and returns `{:ok, result}` or
-  `{:error, error}` otherwise. The `result` is a map of all values you have passed in
-  but with the field `uid` populated from the database.
-
-  Example result:
-
-  ```
-  %{
-    context: %ExDgraph.Api.TxnContext{
-      aborted: false,
-      commit_ts: 1703,
-      keys: [],
-      lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 1508}},
-      start_ts: 1702
-    },
-    result: %{
-      friends: [%{name: "Betty", uid: "0xd82"}],
-      name: "Alice",
-      uid: "0xd81"
-    },
-    uids: %{
-      "763d617a-af34-4ff9-9863-e072bf85146d" => "0xd82",
-      "e94713a5-54a7-4e36-8ab8-0d3019409892" => "0xd81"
-    }
-  }
-  ```
-
+     name: "Alice",
+     friends: %{
+       name: "Betty"
+     }
+   }
+   ```
+   
+      iex> ExDgraph.set_map(conn, map)
+      %{:ok,
+        %{
+          context: %ExDgraph.Api.TxnContext{
+            aborted: false,
+            commit_ts: 1703,
+            keys: [],
+            lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 1508}},
+            start_ts: 1702
+          },
+          result: %{
+            friends: [%{name: "Betty", uid: "0xd82"}],
+            name: "Alice",
+            uid: "0xd81"
+          },
+          uids: %{
+            "763d617a-af34-4ff9-9863-e072bf85146d" => "0xd82",
+            "e94713a5-54a7-4e36-8ab8-0d3019409892" => "0xd81"
+          }
+        }
+      }
   """
   @spec set_map(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate set_map(conn, map), to: Mutation
 
   @doc """
-  The same as set_map/2 but raises a ExDgraph.Exception if it fails.
+  The same as `set_map/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
   @spec set_map!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
@@ -706,7 +704,7 @@ defmodule ExDgraph do
   defdelegate operation(conn, statement), to: Operation
 
   @doc """
-  The same as mutation/2 but raises a ExDgraph.Exception if it fails.
+  The same as `operation/2` but raises a ExDgraph.Exception if it fails.
   Returns the server response otherwise.
   """
   @spec operation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
