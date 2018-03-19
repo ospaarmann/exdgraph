@@ -29,7 +29,7 @@ Add the package `ex_dgraph` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_dgraph, "~> 0.1.0"}
+    {:ex_dgraph, github: "ospaarmann/exdgraph", tag: "0.1.0"}
   ]
 end
 ```
