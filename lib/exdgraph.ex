@@ -490,15 +490,67 @@ defmodule ExDgraph do
   ########################
 
   @doc """
-  sends the query to the server and returns `{:ok, result}` or
-  `{:error, error}` otherwise
-  TODO: Better documentation and type of result
+  Sends the query to the server and returns `{:ok, result}` or
+  `{:error, error}` otherwise.
+
+  ## Parameters
+
+  - `conn`: The pool name from `ExDgraph.conn()`.
+  - `statement`: A GraphQL+ query statement as a string.
+
+  ## Examples
+
+      iex> query_statement = \"\"\"
+      ...> {
+      ...>    starwars(func: anyofterms(name, "VI"))
+      ...>    {
+      ...>      uid
+      ...>      name
+      ...>      release_date
+      ...>      starring
+      ...>      {
+      ...>        name
+      ...>      }
+      ...>    }
+      ...>  }
+      ...>  \"\"\"
+      iex> ExDgraph.query(conn, query_statement)
+      %{:ok,
+        %{
+          result: %{
+            starwars: [
+              %{
+                name: "Star Wars: Episode VI - Return of the Jedi",
+                release_date: "1983-05-25",
+                starring: [
+                  %{name: "Princess Leia"},
+                  %{name: "Luke Skywalker"},
+                  %{name: "Han Solo"}
+                ],
+                uid: "0xcdce"
+              }
+            ]
+          },
+          schema: [],
+          txn: %ExDgraph.Api.TxnContext{
+            aborted: false,
+            commit_ts: 0,
+            keys: [],
+            lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 5696}},
+            start_ts: 51357
+          }
+        }
+      }
+
+      iex> ExDgraph.query(conn, invalid_statement)
+      {:error, [code: 2, message: "while lexing wrong: Invalid operation type: wrong"]}
+
   """
   @spec query(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate query(conn, statement), to: Query
 
   @doc """
-  The same as query/2 but raises a ExDgraph.Exception if it fails.
+  The same as `query/2` but raises a ExDgraph.Exception if it fails.
   Returns the server response otherwise.
   """
   @spec query!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
