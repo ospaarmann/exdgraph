@@ -560,15 +560,83 @@ defmodule ExDgraph do
   ######################
 
   @doc """
-  sends the mutation to the server and returns `{:ok, result}` or
+  Sends the mutation to the server and returns `{:ok, result}` or
   `{:error, error}` otherwise
-  TODO: Better documentation and type of result
+
+  ## Examples
+
+  ```elixir
+  starwars_creation_mutation = \"\"\"
+     _:luke <name> "Luke Skywalker" .
+     _:leia <name> "Princess Leia" .
+     _:han <name> "Han Solo" .
+     _:lucas <name> "George Lucas" .
+     _:irvin <name> "Irvin Kernshner" .
+     _:richard <name> "Richard Marquand" .
+
+     _:sw1 <name> "Star Wars: Episode IV - A New Hope" .
+     _:sw1 <release_date> "1977-05-25" .
+     _:sw1 <revenue> "775000000" .
+     _:sw1 <running_time> "121" .
+     _:sw1 <starring> _:luke .
+     _:sw1 <starring> _:leia .
+     _:sw1 <starring> _:han .
+     _:sw1 <director> _:lucas .
+
+     _:sw2 <name> "Star Wars: Episode V - The Empire Strikes Back" .
+     _:sw2 <release_date> "1980-05-21" .
+     _:sw2 <revenue> "534000000" .
+     _:sw2 <running_time> "124" .
+     _:sw2 <starring> _:luke .
+     _:sw2 <starring> _:leia .
+     _:sw2 <starring> _:han .
+     _:sw2 <director> _:irvin .
+
+     _:sw3 <name> "Star Wars: Episode VI - Return of the Jedi" .
+     _:sw3 <release_date> "1983-05-25" .
+     _:sw3 <revenue> "572000000" .
+     _:sw3 <running_time> "131" .
+     _:sw3 <starring> _:luke .
+     _:sw3 <starring> _:leia .
+     _:sw3 <starring> _:han .
+     _:sw3 <director> _:richard .
+
+     _:st1 <name> "Star Trek: The Motion Picture" .
+     _:st1 <release_date> "1979-12-07" .
+     _:st1 <revenue> "139000000" .
+     _:st1 <running_time> "132" .
+  \"\"\"
+  ```
+
+      iex> ExDgraph.mutation(conn, starwars_creation_mutation)
+      %{
+        context: %ExDgraph.Api.TxnContext{
+          aborted: false,
+          commit_ts: 60012,
+          keys: [],
+          lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 6406}},
+          start_ts: 60011
+        },
+        uids: %{
+          "han" => "0xea7e",
+          "irvin" => "0xea79",
+          "leia" => "0xea7d",
+          "lucas" => "0xea78",
+          "luke" => "0xea77",
+          "richard" => "0xea7a",
+          "st1" => "0xea76",
+          "sw1" => "0xea7b",
+          "sw2" => "0xea7c",
+          "sw3" => "0xea75"
+        }
+      }
+
   """
   @spec mutation(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate mutation(conn, statement), to: Mutation
 
   @doc """
-  The same as mutation/2 but raises a ExDgraph.Exception if it fails.
+  The same as `mutation/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
   @spec mutation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
