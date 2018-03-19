@@ -416,11 +416,9 @@ $ mix test
 - [X] Implement DBConnection behaviour
 - [X] Improve test coverage
 - [ ] Support transactions
-- [ ] Add documentation
+- [X] Add documentation
 - [X] Improve error handling
 - [X] Implement TLS / authentication
-- [ ] Improve request model via specific module
-- [ ] Improve response model via specific module
 - [X] Query builder
 - [X] Query executer
 - [X] Mutations
