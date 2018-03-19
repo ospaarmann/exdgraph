@@ -1,4 +1,5 @@
 defmodule ExDgraph.OperationStatement do
+  @moduledoc false
   defstruct drop_all: false, drop_attr: "", schema: ""
 end
 

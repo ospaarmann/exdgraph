@@ -1,6 +1,10 @@
 defmodule ExDgraph.Mutation do
+  @moduledoc """
+  Provides the functions for the callbacks from the DBConnection behaviour.
+  """
   alias ExDgraph.{Exception, MutationStatement, QueryStatement, Transform}
 
+  @doc false
   def mutation!(conn, statement) do
     case mutation_commit(conn, statement) do
       {:error, f} ->
@@ -11,6 +15,7 @@ defmodule ExDgraph.Mutation do
     end
   end
 
+  @doc false
   def mutation(conn, statement) do
     case mutation_commit(conn, statement) do
       {:error, f} -> {:error, code: f.code, message: f.message}
@@ -18,6 +23,7 @@ defmodule ExDgraph.Mutation do
     end
   end
 
+  @doc false
   def set_map(conn, map) do
     map_with_tmp_uids = insert_tmp_uids(map)
     json = Poison.encode!(map_with_tmp_uids)
@@ -28,6 +34,7 @@ defmodule ExDgraph.Mutation do
     end
   end
 
+  @doc false
   def set_map!(conn, map) do
     map_with_tmp_uids = insert_tmp_uids(map)
     json = Poison.encode!(map_with_tmp_uids)

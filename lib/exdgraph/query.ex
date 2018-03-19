@@ -1,6 +1,10 @@
 defmodule ExDgraph.Query do
+  @moduledoc """
+  Provides the functions for the callbacks from the DBConnection behaviour.
+  """
   alias ExDgraph.{Exception, QueryStatement, Transform}
 
+  @doc false
   def query!(conn, statement) do
     case query_commit(conn, statement) do
       {:error, f} ->
@@ -11,9 +15,7 @@ defmodule ExDgraph.Query do
     end
   end
 
-  @doc """
-  Runs a query agains the database. Either returns {:ok, result} or {:error, error}
-  """
+  @doc false
   def query(conn, statement) do
     case query_commit(conn, statement) do
       {:error, f} -> {:error, code: f.code, message: f.message}

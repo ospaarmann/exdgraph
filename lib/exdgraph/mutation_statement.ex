@@ -1,4 +1,5 @@
 defmodule ExDgraph.MutationStatement do
+  @moduledoc false
   defstruct statement: "", set_json: ""
 end
 

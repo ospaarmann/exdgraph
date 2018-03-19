@@ -1,10 +1,11 @@
 defmodule ExDgraph.Operation do
   @moduledoc """
-  Module to handle operations. Supports drop_all/1, schema/2 and drop_attr/2
+  Provides the functions for the callbacks from the DBConnection behaviour.
   """
   alias ExDgraph.Api.Operation
   alias ExDgraph.{Exception, OperationStatement}
 
+  @doc false
   def operation!(conn, operation) do
     case operation_commit(conn, operation) do
       {:error, f} ->
@@ -15,6 +16,7 @@ defmodule ExDgraph.Operation do
     end
   end
 
+  @doc false
   def operation(conn, operation) do
     case operation_commit(conn, operation) do
       {:error, f} -> {:error, code: f.code, message: f.message}

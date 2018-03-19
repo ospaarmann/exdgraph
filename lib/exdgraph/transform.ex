@@ -1,11 +1,13 @@
 defmodule ExDgraph.Transform do
   @moduledoc """
   Transform a raw response from Dgraph. For example decode the json part.
-  This still needs work and improvement.
   """
 
+  @doc """
+  Takes a response from Dgraph, parses the `json` with `Poison` and transforms all string
+  keys into atom keys.
+  """
   def transform_query(%ExDgraph.Api.Response{json: json, schema: schema, txn: txn}) do
-    # TODO: Implement own response module
     decoded = Poison.decode!(json)
 
     transformed =
@@ -21,8 +23,10 @@ defmodule ExDgraph.Transform do
     }
   end
 
+  @doc """
+  Takes a response from Dgraph and returns a map.
+  """
   def transform_mutation(%ExDgraph.Api.Assigned{context: context, uids: uids}) do
-    # TODO: Implement own response module
     %{
       context: context,
       uids: uids

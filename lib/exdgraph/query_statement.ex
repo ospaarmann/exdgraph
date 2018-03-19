@@ -1,4 +1,5 @@
 defmodule ExDgraph.QueryStatement do
+  @moduledoc false
   defstruct statement: ""
 end
 
