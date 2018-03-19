@@ -634,25 +634,27 @@ defmodule ExDgraph do
   ```
 
       iex> ExDgraph.mutation(conn, starwars_creation_mutation)
-      %{
-        context: %ExDgraph.Api.TxnContext{
-          aborted: false,
-          commit_ts: 60012,
-          keys: [],
-          lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 6406}},
-          start_ts: 60011
-        },
-        uids: %{
-          "han" => "0xea7e",
-          "irvin" => "0xea79",
-          "leia" => "0xea7d",
-          "lucas" => "0xea78",
-          "luke" => "0xea77",
-          "richard" => "0xea7a",
-          "st1" => "0xea76",
-          "sw1" => "0xea7b",
-          "sw2" => "0xea7c",
-          "sw3" => "0xea75"
+      %{:ok,
+        %{
+          context: %ExDgraph.Api.TxnContext{
+            aborted: false,
+            commit_ts: 60012,
+            keys: [],
+            lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 6406}},
+            start_ts: 60011
+          },
+          uids: %{
+            "han" => "0xea7e",
+            "irvin" => "0xea79",
+            "leia" => "0xea7d",
+            "lucas" => "0xea78",
+            "luke" => "0xea77",
+            "richard" => "0xea7a",
+            "st1" => "0xea76",
+            "sw1" => "0xea7b",
+            "sw2" => "0xea7c",
+            "sw3" => "0xea75"
+          }
         }
       }
 
@@ -718,15 +720,36 @@ defmodule ExDgraph do
   ######################
 
   @doc """
-  sends the operations to the server and returns `{:ok, result}` or
+  Sends the operations to the server and returns `{:ok, result}` or
   `{:error, error}` otherwise
-  TODO: Better documentation and type of result
+
+  ## Examples
+
+  ### Create schema
+
+  ```elixir
+  schema = \"\"\"
+    id: string @index(exact).
+    name: string @index(exact, term) @count .
+    age: int @index(int) .
+    friend: uid @count .
+    dob: dateTime .
+  \"\"\"
+  ```
+      iex> ExDgraph.operation(conn, %{schema: schema})
+      %{:ok, %ExDgraph.Api.Payload{Data: ""}}
+
+  ### Drop all entries from the database
+
+      iex> ExDgraph.operation(conn, %{drop_all: true})
+      %{:ok, %ExDgraph.Api.Payload{Data: ""}}
+
   """
   @spec operation(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate operation(conn, statement), to: Operation
 
   @doc """
-  The same as `operation/2` but raises a ExDgraph.Exception if it fails.
+  The same as `operation/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
   @spec operation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
