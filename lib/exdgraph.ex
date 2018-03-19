@@ -421,6 +421,17 @@ defmodule ExDgraph do
     - `:timeout` - Connect timeout in milliseconds (default: `#{@timeout}`)
        Poolboy will block the current process and wait for an available worker,
        failing after a timeout, when the pool is full;
+    - `:pool` - The connection pool. Defaults to `DbConnection.Poolboy`.
+    - `:ssl` - If to use ssl for the connection (please see configuration example).
+      If you set this option, you also have to set `cacertfile` to the correct path.
+    - `:tls_client_auth` - If to use TLS client authentication for the connection
+      (please see configuration example). If you set this option, you also have to set
+      `certfile`, `keyfile` and `cacertfile` to the correct path.
+    - `:certfile` - Path to your client certificate.
+    - `:keyfile` - Path to your client key.
+    - `:cacertfile` - Path to your CA certificate you used to sign the certificate and key.
+      Check the Wiki on how to set this up.
+    - `:retry_linear_backoff` - Retry options. Defaults to `{delay: 150, factor: 2, tries: 3}`
 
   ## Example of valid configurations (i.e. defined in config/dev.exs) and usage:
 
@@ -430,12 +441,10 @@ defmodule ExDgraph do
         pool_size: 5,
         max_overflow: 1
 
-  Sample code:
+  ## Example
 
-      opts = Application.get_env(:ex_dgraph, ExDgraph)
+      iex> opts = Application.get_env(:ex_dgraph, ExDgraph)
       {:ok, pid} = ExDgraph.start_link(opts)
-
-      TODO: Query example
   """
   @spec start_link(Keyword.t()) :: Supervisor.on_start()
   def start_link(opts) do
@@ -460,7 +469,7 @@ defmodule ExDgraph do
   def conn, do: pool_name()
 
   @doc """
-  returns an environment specific ExDgraph configuration.
+  Returns an environment specific ExDgraph configuration.
   """
   def config, do: ConfigAgent.get_config()
 
