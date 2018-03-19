@@ -441,6 +441,28 @@ defmodule ExDgraph do
         pool_size: 5,
         max_overflow: 1
 
+  ## With SSL
+
+      config :ex_dgraph, ExDgraph,
+        # default port considered to be: 9080
+        hostname: 'localhost',
+        pool_size: 5,
+        max_overflow: 1,
+        ssl: true,
+        cacertfile: '/path/to/MyRootCA.pem'
+
+  ## With TLS client authentication
+
+      config :ex_dgraph, ExDgraph,
+        # default port considered to be: 9080
+        hostname: 'localhost',
+        pool_size: 5,
+        max_overflow: 1,
+        ssl: true,
+        cacertfile: '/path/to/MyRootCA.pem',
+        certfile: '/path/to/MyClient1.pem',
+        keyfile: '/path/to/MyClient1.key',
+
   ## Example
 
       iex> opts = Application.get_env(:ex_dgraph, ExDgraph)
@@ -659,7 +681,7 @@ defmodule ExDgraph do
      }
    }
    ```
-   
+
       iex> ExDgraph.set_map(conn, map)
       %{:ok,
         %{
