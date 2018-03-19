@@ -58,7 +58,7 @@ defmodule ExDgraph.MixProject do
 
   defp description do
     """
-    ExDgraph is the attempt to create a gRPC based client for the Dgraph database. WORK IN PROGRESS.
+    A gRPC based Dgraph client for Elixir.
     """
   end
 
