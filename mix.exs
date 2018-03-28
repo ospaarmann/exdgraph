@@ -34,7 +34,8 @@ defmodule ExDgraph.MixProject do
         :logger,
         :poolboy,
         :db_connection,
-        :retry
+        :retry,
+        :grpc
       ]
     ]
   end
@@ -42,7 +43,8 @@ defmodule ExDgraph.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:grpc, github: "tony612/grpc-elixir"},
+      {:grpc, "~> 0.3.0-alpha.1"},
+      {:gun, "1.0.0-pre.5", override: true},
       {:protobuf, "~> 0.5"},
       {:poison, "~> 3.1"},
       {:poolboy, "~> 1.5.1"},
