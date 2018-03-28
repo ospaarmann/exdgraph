@@ -19,8 +19,11 @@ defmodule ExDgraph.Operation do
   @doc false
   def operation(conn, operation) do
     case operation_commit(conn, operation) do
-      {:error, f} -> {:error, code: f.code, message: f.message}
-      r -> {:ok, r}
+      {:error, f} ->
+        {:error, code: f.code, message: f.message}
+
+      r ->
+        {:ok, r}
     end
   end
 
