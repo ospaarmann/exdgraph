@@ -54,12 +54,14 @@ defmodule ExDgraph.Api.Assigned do
 
   @type t :: %__MODULE__{
           uids: %{String.t() => String.t()},
-          context: ExDgraph.Api.TxnContext.t()
+          context: ExDgraph.Api.TxnContext.t(),
+          latency: ExDgraph.Api.Latency.t()
         }
-  defstruct [:uids, :context]
+  defstruct [:uids, :context, :latency]
 
   field(:uids, 1, repeated: true, type: ExDgraph.Api.Assigned.UidsEntry, map: true)
   field(:context, 2, type: ExDgraph.Api.TxnContext)
+  field(:latency, 12, type: ExDgraph.Api.Latency)
 end
 
 defmodule ExDgraph.Api.Assigned.UidsEntry do
