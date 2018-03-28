@@ -145,6 +145,7 @@ defmodule ExDgraph.Protocol do
         {:ok, res, channel}
 
       {:error, f} ->
+        IO.inspect(f)
         raise Exception, code: f.status, message: f.message
     end
   rescue
