@@ -43,7 +43,7 @@ defmodule ExDgraph.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:grpc, "~> 0.3.0-alpha.1"},
+      {:grpc, "~> 0.3.0-alpha.2"},
       {:gun, "1.0.0-pre.5", override: true},
       {:protobuf, "~> 0.5"},
       {:poison, "~> 3.1"},
