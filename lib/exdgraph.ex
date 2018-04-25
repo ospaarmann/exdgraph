@@ -9,7 +9,7 @@ defmodule ExDgraph do
   ```elixir
   def deps do
     [
-      {:ex_dgraph, "~> 0.2.0-alpha.2"}
+      {:ex_dgraph, "~> 0.2.0-alpha.3"}
     ]
   end
   ```

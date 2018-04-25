@@ -43,7 +43,7 @@ defmodule ExDgraph.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:grpc, "~> 0.3.0-alpha.2"},
+      {:grpc, "~> 0.3.0-alpha.3"},
       {:gun, "1.0.0-pre.5"},
       {:protobuf, "~> 0.5"},
       {:poison, "~> 3.1"},
@@ -68,7 +68,7 @@ defmodule ExDgraph.MixProject do
     [
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
       maintainers: ["Ole Spaarmann"],
-      licenses: ["MIT"],
+      licenses: ["Apache 2.0"],
       links: %{"GitHub" => "https://github.com/ospaarmann/exdgraph"}
     ]
   end
