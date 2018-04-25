@@ -29,7 +29,7 @@ Add the package `ex_dgraph` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_dgraph, "~> 0.2.0-alpha.1"}
+    {:ex_dgraph, "~> 0.2.0-alpha.2"}
   ]
 end
 ```
