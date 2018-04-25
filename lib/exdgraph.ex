@@ -9,7 +9,7 @@ defmodule ExDgraph do
   ```elixir
   def deps do
     [
-      {:ex_dgraph, github: "ospaarmann/exdgraph", tag: "v0.2.0"}
+      {:ex_dgraph, github: "ospaarmann/exdgraph", tag: "v0.2.0-alpha.1"}
     ]
   end
   ```
