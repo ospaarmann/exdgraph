@@ -84,13 +84,36 @@ defmodule ExDgraph.Mutation do
 
   defp insert_tmp_uids(map) when is_list(map), do: Enum.map(map, &insert_tmp_uids/1)
 
+  defp insert_tmp_uids(map = %x{}) do
+    schema = x |> get_schema_name()
+
+    map
+    |> Map.from_struct()
+    |> Map.update(:uid, "_:#{UUID.uuid4()}", fn
+      nil -> "_:#{UUID.uuid4()}"
+      existing_uuid -> existing_uuid
+    end)
+    |> Enum.reduce(
+      %{},
+      fn
+        {:uid, map_value}, a ->
+          Map.merge(a, %{:uid => insert_tmp_uids(map_value)})
+
+        {key, map_value}, a ->
+          Map.merge(a, %{"#{schema}.#{key}" => insert_tmp_uids(map_value)})
+      end
+    )
+  end
+
   defp insert_tmp_uids(map) when is_map(map) do
     map
     |> Map.update(:uid, "_:#{UUID.uuid4()}", fn existing_uuid -> existing_uuid end)
-    |> Enum.reduce(%{}, fn
-      {key, a_map = %{}}, a -> Map.merge(a, %{key => insert_tmp_uids(a_map)})
-      {key, not_a_map}, a -> Map.merge(a, %{key => insert_tmp_uids(not_a_map)})
-    end)
+    |> Enum.reduce(
+      %{},
+      fn {key, map_value}, a ->
+        Map.merge(a, %{key => insert_tmp_uids(map_value)})
+      end
+    )
   end
 
   defp insert_tmp_uids(value), do: value
@@ -106,13 +129,21 @@ defmodule ExDgraph.Mutation do
         false -> existing_uuid
       end
     end)
-    |> Enum.reduce(%{}, fn
-      {key, a_map = %{}}, a -> Map.merge(a, %{key => replace_tmp_uids(a_map, uids)})
-      {key, not_a_map}, a -> Map.merge(a, %{key => replace_tmp_uids(not_a_map, uids)})
-    end)
+    |> Enum.reduce(
+      %{},
+      fn {key, map_value}, a ->
+        # delete the schema prefix
+        key = key |> to_string() |> String.split(".") |> List.last() |> String.to_existing_atom()
+        Map.merge(a, %{key => replace_tmp_uids(map_value, uids)})
+      end
+    )
   end
 
-  defp replace_tmp_uids(value, uids), do: value
+  defp replace_tmp_uids(value, _uids), do: value
+
+  defp get_schema_name(schema) do
+    schema |> to_string() |> String.split(".") |> List.last() |> String.downcase()
+  end
 
   defp get_real_uid(tmp_value, uids) do
   end

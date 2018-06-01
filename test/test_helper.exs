@@ -7,7 +7,13 @@ defmodule ExDgraph.TestHelper do
       age: int @index(int) .
       friend: uid @count .
       dob: dateTime .
-      identifier: string @index(exact, term) ."
+      identifier: string @index(exact, term) .
+      person.id: string @index(exact).
+      person.name: string @index(exact, term) @count .
+      person.age: int @index(int) .
+      person.friend: uid @count .
+      person.dob: dateTime .
+      person.identifier: string @index(exact, term) ."
 
   @starwars_creation_mutation """
      _:luke <name> "Luke Skywalker" .

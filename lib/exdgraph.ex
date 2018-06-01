@@ -402,7 +402,7 @@ defmodule ExDgraph do
   @pool_name :ex_dgraph_pool
   @timeout 15_000
 
-  alias ExDgraph.Api.{Dgraph, Request, Response, Mutation, Operation}
+  alias ExDgraph.Api.{Mutation, Operation}
   alias ExDgraph.{ConfigAgent, Operation, Mutation, Query, Utils}
 
   @type conn :: DBConnection.conn()
