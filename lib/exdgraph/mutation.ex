@@ -4,6 +4,8 @@ defmodule ExDgraph.Mutation do
   """
   alias ExDgraph.{Exception, MutationStatement, Transform}
 
+  @enforce_struct_schema Application.get_env(:ex_dgraph, ExDgraph)[:enforce_struct_schema]
+
   @doc false
   def mutation!(conn, statement) do
     case mutation_commit(conn, statement) do
@@ -154,16 +156,8 @@ defmodule ExDgraph.Mutation do
     end)
     |> Enum.reduce(
       %{},
-      fn
-        {:uid, map_value}, a ->
-          Map.merge(a, %{:uid => tmp_ids_into_struct(map_value)})
-
-        {key, map_value}, a ->
-          if Application.get_env(:ex_dgraph, ExDgraph)[:enforce_struct_schema] do
-            Map.merge(a, %{"#{schema}.#{key}" => tmp_ids_into_struct(map_value)})
-          else
-            Map.merge(a, %{key => tmp_ids_into_struct(map_value)})
-          end
+      fn {key, map_value}, a ->
+        set_schema(schema, {key, map_value}, a, @enforce_struct_schema)
       end
     )
   end
@@ -228,6 +222,16 @@ defmodule ExDgraph.Mutation do
   defp get_schema_name(schema) do
     schema |> to_string() |> String.split(".") |> List.last() |> String.downcase()
   end
+
+  defp set_schema(_schema_name, {:uid, map_value}, result, _is_enforced_schema),
+    do: Map.merge(result, %{:uid => tmp_ids_into_struct(map_value)})
+
+  defp set_schema(schema_name, {key, map_value}, result, is_enforced_schema)
+       when is_enforced_schema == true,
+       do: Map.merge(result, %{"#{schema_name}.#{key}" => tmp_ids_into_struct(map_value)})
+
+  defp set_schema(_schema_name, {key, map_value}, result, _is_enforced_schema),
+    do: Map.merge(result, %{key => tmp_ids_into_struct(map_value)})
 
   defp run_opts do
     [pool: ExDgraph.config(:pool)]
