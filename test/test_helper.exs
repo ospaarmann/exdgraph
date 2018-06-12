@@ -11,9 +11,10 @@ defmodule ExDgraph.TestHelper do
       person.id: string @index(exact).
       person.name: string @index(exact, term) @count .
       person.age: int @index(int) .
-      person.friend: uid @count .
+      person.dogs: uid @count .
       person.dob: dateTime .
-      person.identifier: string @index(exact, term) ."
+      person.identifier: string @index(exact, term) .
+      dog.name: string @index(exact, term) @count ."
 
   @starwars_creation_mutation """
      _:luke <name> "Luke Skywalker" .

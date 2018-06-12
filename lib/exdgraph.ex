@@ -716,6 +716,59 @@ defmodule ExDgraph do
   @spec set_map!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate set_map!(conn, map), to: Mutation
 
+  @doc """
+  This function allow you to convert an struct type into a mutation (json based) type in dgraph.
+  It also allows you to enforce the schema in database (adding a "class name" info before every predicate, this class name is the single name given to the elixir module struct) by activating the `enforce_struct_schema` in the config files.
+  The function sends the mutation to the server and returns `{:ok, result}` or `{:error, error}` otherwise.
+  Internally it uses Dgraphs `set_json`.
+  The `result` is a map without the "classname" (you can apply the built-in function `struct` to convert the map into the struct you desire) of all values you have passed in but with the field `uid` populated from the database.
+
+  ## Examples
+
+  ```elixir
+  struct_data = %MutationTest.Person{
+    name: "Alice",
+    identifier: "alice_json",
+    dogs: [
+      %MutationTest.Dog{
+        name: "Bello"
+      }
+    ]
+  }
+   ```
+
+      iex> ExDgraph.set_struct(conn, struct_data)
+      %{:ok,
+        %{
+          context: %ExDgraph.Api.TxnContext{
+            aborted: false,
+            commit_ts: 1703,
+            keys: [],
+            lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 1508}},
+            start_ts: 1702
+          },
+          result: %{
+            dogs: [%{name: "Bello", uid: "0xd82"}],
+            name: "Alice",
+            uid: "0xd81"
+          },
+          uids: %{
+            "763d617a-af34-4ff9-9863-e072bf85146d" => "0xd82",
+            "e94713a5-54a7-4e36-8ab8-0d3019409892" => "0xd81"
+          }
+        }
+      }
+  """
+  @spec set_struct(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  defdelegate set_struct(conn, map), to: Mutation
+
+  @doc """
+  The same as `set_struct/2` but raises an `ExDgraph.Exception` if it fails.
+  Returns the server response otherwise.
+  """
+  @spec set_struct!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  defdelegate set_struct!(conn, map), to: Mutation
+
   ## Operation
   ######################
 

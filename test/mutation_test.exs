@@ -1,5 +1,9 @@
 defmodule MutationTest.Person do
-  defstruct [:uid, :name, :identifier, :friends]
+  defstruct [:uid, :name, :identifier, :dogs]
+end
+
+defmodule MutationTest.Dog do
+  defstruct [:uid, :name]
 end
 
 defmodule MutationTest do
@@ -12,8 +16,8 @@ defmodule MutationTest do
   @struct_insert_mutation %MutationTest.Person{
     name: "Alice",
     identifier: "alice_json",
-    friends: [
-      %MutationTest.Person{
+    dogs: [
+      %MutationTest.Dog{
         name: "Betty"
       }
     ]
@@ -25,9 +29,9 @@ defmodule MutationTest do
         {
           uid
           name : person.name
-          friends : person.friends
+          dogs : person.dogs
           {
-            name : person.name
+            name : dog.name
             uid
           }
         }
@@ -139,7 +143,7 @@ defmodule MutationTest do
 
   # TODO: Take care of updates via uid
   test "set_map/2 struct returns {:ok, mutation_msg} for correct mutation", %{conn: conn} do
-    {status, mutation_msg} = ExDgraph.set_map(conn, @struct_insert_mutation)
+    {status, mutation_msg} = ExDgraph.set_struct(conn, @struct_insert_mutation)
     assert status == :ok
     assert mutation_msg.context.aborted == false
     query_msg = ExDgraph.Query.query!(conn, @struct_insert_check_query)
@@ -147,45 +151,45 @@ defmodule MutationTest do
     people = res[:people]
     alice = List.first(people)
     assert alice[:name] == "Alice"
-    betty = List.first(alice[:friends])
+    betty = List.first(alice[:dogs])
     assert betty[:name] == "Betty"
   end
 
   test "set_map!/2 struct returns mutation_message", %{conn: conn} do
-    mutation_msg = ExDgraph.set_map!(conn, @struct_insert_mutation)
+    mutation_msg = ExDgraph.set_struct!(conn, @struct_insert_mutation)
     assert mutation_msg.context.aborted == false
     query_msg = ExDgraph.Query.query!(conn, @struct_insert_check_query)
     res = query_msg.result
     people = res[:people]
     alice = List.first(people)
     assert alice[:name] == "Alice"
-    betty = List.first(alice[:friends])
+    betty = List.first(alice[:dogs])
     assert betty[:name] == "Betty"
   end
 
   test "set_map/2 struct returns result with uids", %{conn: conn} do
-    {status, mutation_msg} = ExDgraph.set_map(conn, @struct_insert_mutation)
+    {status, mutation_msg} = ExDgraph.set_struct(conn, @struct_insert_mutation)
     assert status == :ok
     assert is_map(mutation_msg.result)
     mutation_alice = mutation_msg.result
-    mutation_betty = List.first(mutation_alice[:friends])
+    mutation_betty = List.first(mutation_alice[:dogs])
     query_msg = ExDgraph.Query.query!(conn, @struct_insert_check_query)
     query_people = query_msg.result[:people]
     query_alice = List.first(query_people)
-    query_betty = List.first(query_alice[:friends])
+    query_betty = List.first(query_alice[:dogs])
     assert mutation_alice[:uid] == query_alice[:uid]
     assert mutation_betty[:uid] == query_betty[:uid]
   end
 
   test "set_map!/2 struct returns result with uids", %{conn: conn} do
-    mutation_msg = ExDgraph.set_map!(conn, @struct_insert_mutation)
+    mutation_msg = ExDgraph.set_struct!(conn, @struct_insert_mutation)
     assert is_map(mutation_msg.result)
     mutation_alice = mutation_msg.result
-    mutation_betty = List.first(mutation_alice[:friends])
+    mutation_betty = List.first(mutation_alice[:dogs])
     query_msg = ExDgraph.Query.query!(conn, @struct_insert_check_query)
     query_people = query_msg.result[:people]
     query_alice = List.first(query_people)
-    query_betty = List.first(query_alice[:friends])
+    query_betty = List.first(query_alice[:dogs])
     assert mutation_alice[:uid] == query_alice[:uid]
     assert mutation_betty[:uid] == query_betty[:uid]
   end

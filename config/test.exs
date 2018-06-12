@@ -9,7 +9,8 @@ config :ex_dgraph, ExDgraph,
   # linearly increase the delay from 150ms following a Fibonacci pattern,
   # cap the delay at 15 seconds (the value defined by the default `:timeout`
   # parameter) and giving up after 3 attempts
-  retry_linear_backoff: [delay: 150, factor: 2, tries: 3]
+  retry_linear_backoff: [delay: 150, factor: 2, tries: 3],
+  enforce_struct_schema: true
 
 # the `retry_linear_backoff` values above are also the default driver values,
 # re-defined here mostly as a reminder
