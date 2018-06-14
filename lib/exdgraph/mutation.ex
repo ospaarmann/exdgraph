@@ -52,10 +52,10 @@ defmodule ExDgraph.Mutation do
 
   @doc false
   def set_struct(conn, struct) do
-    struct_with_tmp_uids = tmp_ids_into_struct(struct)
-    json = Poison.encode!(struct_with_tmp_uids)
+    uids_and_schema_map = set_tmp_ids_and_schema(struct)
+    json = Poison.encode!(uids_and_schema_map)
 
-    case set_struct_commit(conn, json, struct_with_tmp_uids) do
+    case set_struct_commit(conn, json, uids_and_schema_map) do
       {:error, f} -> {:error, code: f.code, message: f.message}
       r -> {:ok, r}
     end
@@ -63,10 +63,10 @@ defmodule ExDgraph.Mutation do
 
   @doc false
   def set_struct!(conn, struct) do
-    struct_with_tmp_uids = tmp_ids_into_struct(struct)
-    json = Poison.encode!(struct_with_tmp_uids)
+    uids_and_schema_map = set_tmp_ids_and_schema(struct)
+    json = Poison.encode!(uids_and_schema_map)
 
-    case set_struct_commit(conn, json, struct_with_tmp_uids) do
+    case set_struct_commit(conn, json, uids_and_schema_map) do
       {:error, f} ->
         raise Exception, code: f.code, message: f.message
 
@@ -143,9 +143,9 @@ defmodule ExDgraph.Mutation do
 
   defp insert_tmp_uids(value), do: value
 
-  defp tmp_ids_into_struct(map) when is_list(map), do: Enum.map(map, &tmp_ids_into_struct/1)
+  defp set_tmp_ids_and_schema(map) when is_list(map), do: Enum.map(map, &set_tmp_ids_and_schema/1)
 
-  defp tmp_ids_into_struct(map = %x{}) do
+  defp set_tmp_ids_and_schema(map = %x{}) do
     schema = x |> get_schema_name()
 
     map
@@ -162,18 +162,18 @@ defmodule ExDgraph.Mutation do
     )
   end
 
-  defp tmp_ids_into_struct(map) when is_map(map) do
+  defp set_tmp_ids_and_schema(map) when is_map(map) do
     map
     |> Map.update(:uid, "_:#{UUID.uuid4()}", fn existing_uuid -> existing_uuid end)
     |> Enum.reduce(
       %{},
       fn {key, map_value}, a ->
-        Map.merge(a, %{key => tmp_ids_into_struct(map_value)})
+        Map.merge(a, %{key => set_tmp_ids_and_schema(map_value)})
       end
     )
   end
 
-  defp tmp_ids_into_struct(value), do: value
+  defp set_tmp_ids_and_schema(value), do: value
 
   defp replace_tmp_uids(map, uids) when is_list(map),
     do: Enum.map(map, &replace_tmp_uids(&1, uids))
@@ -224,14 +224,14 @@ defmodule ExDgraph.Mutation do
   end
 
   defp set_schema(_schema_name, {:uid, map_value}, result, _is_enforced_schema),
-    do: Map.merge(result, %{:uid => tmp_ids_into_struct(map_value)})
+    do: Map.merge(result, %{:uid => set_tmp_ids_and_schema(map_value)})
 
   defp set_schema(schema_name, {key, map_value}, result, is_enforced_schema)
        when is_enforced_schema == true,
-       do: Map.merge(result, %{"#{schema_name}.#{key}" => tmp_ids_into_struct(map_value)})
+       do: Map.merge(result, %{"#{schema_name}.#{key}" => set_tmp_ids_and_schema(map_value)})
 
   defp set_schema(_schema_name, {key, map_value}, result, _is_enforced_schema),
-    do: Map.merge(result, %{key => tmp_ids_into_struct(map_value)})
+    do: Map.merge(result, %{key => set_tmp_ids_and_schema(map_value)})
 
   defp run_opts do
     [pool: ExDgraph.config(:pool)]

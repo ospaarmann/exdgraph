@@ -8,10 +8,13 @@ defmodule ExDgraph.TestHelper do
       friend: uid @count .
       dob: dateTime .
       identifier: string @index(exact, term) .
+      some: string @index(exact, term) .
+      map_owner: uid .
       person.id: string @index(exact).
       person.name: string @index(exact, term) @count .
       person.age: int @index(int) .
       person.dogs: uid @count .
+      person.some_map: uid .
       person.dob: dateTime .
       person.identifier: string @index(exact, term) .
       dog.name: string @index(exact, term) @count ."

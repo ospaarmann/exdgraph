@@ -1,5 +1,5 @@
 defmodule MutationTest.Person do
-  defstruct [:uid, :name, :identifier, :dogs]
+  defstruct [:uid, :name, :identifier, :dogs, :some_map]
 end
 
 defmodule MutationTest.Dog do
@@ -20,7 +20,13 @@ defmodule MutationTest do
       %MutationTest.Dog{
         name: "Betty"
       }
-    ]
+    ],
+    some_map: %{
+      some: "value",
+      map_owner: %MutationTest.Person{
+        name: "Bob"
+      }
+    }
   }
 
   @struct_insert_check_query """
@@ -33,6 +39,16 @@ defmodule MutationTest do
           {
             name : dog.name
             uid
+          }
+          some_map : person.some_map
+          {
+            uid
+            some
+            map_owner
+            {
+              uid
+              name : person.name
+            }
           }
         }
     }
@@ -153,6 +169,10 @@ defmodule MutationTest do
     assert alice[:name] == "Alice"
     betty = List.first(alice[:dogs])
     assert betty[:name] == "Betty"
+    some_map = List.first(alice[:some_map])
+    assert some_map.some == "value"
+    bob = List.first(some_map[:map_owner])
+    assert bob.name == "Bob"
   end
 
   test "set_map!/2 struct returns mutation_message", %{conn: conn} do
@@ -165,6 +185,10 @@ defmodule MutationTest do
     assert alice[:name] == "Alice"
     betty = List.first(alice[:dogs])
     assert betty[:name] == "Betty"
+    some_map = List.first(alice[:some_map])
+    assert some_map.some == "value"
+    bob = List.first(some_map[:map_owner])
+    assert bob.name == "Bob"
   end
 
   test "set_map/2 struct returns result with uids", %{conn: conn} do
@@ -173,12 +197,18 @@ defmodule MutationTest do
     assert is_map(mutation_msg.result)
     mutation_alice = mutation_msg.result
     mutation_betty = List.first(mutation_alice[:dogs])
+    mutation_some_map = mutation_alice[:some_map]
+    mutation_bob = mutation_some_map[:map_owner]
     query_msg = ExDgraph.Query.query!(conn, @struct_insert_check_query)
     query_people = query_msg.result[:people]
     query_alice = List.first(query_people)
     query_betty = List.first(query_alice[:dogs])
+    query_some_map = List.first(query_alice[:some_map])
+    query_bob = List.first(query_some_map[:map_owner])
     assert mutation_alice[:uid] == query_alice[:uid]
     assert mutation_betty[:uid] == query_betty[:uid]
+    assert mutation_some_map[:uid] == query_some_map[:uid]
+    assert mutation_bob[:uid] == query_bob[:uid]
   end
 
   test "set_map!/2 struct returns result with uids", %{conn: conn} do
@@ -186,12 +216,18 @@ defmodule MutationTest do
     assert is_map(mutation_msg.result)
     mutation_alice = mutation_msg.result
     mutation_betty = List.first(mutation_alice[:dogs])
+    mutation_some_map = mutation_alice[:some_map]
+    mutation_bob = mutation_some_map[:map_owner]
     query_msg = ExDgraph.Query.query!(conn, @struct_insert_check_query)
     query_people = query_msg.result[:people]
     query_alice = List.first(query_people)
     query_betty = List.first(query_alice[:dogs])
+    query_some_map = List.first(query_alice[:some_map])
+    query_bob = List.first(query_some_map[:map_owner])
     assert mutation_alice[:uid] == query_alice[:uid]
     assert mutation_betty[:uid] == query_betty[:uid]
+    assert mutation_some_map[:uid] == query_some_map[:uid]
+    assert mutation_bob[:uid] == query_bob[:uid]
   end
 
   test "set_map/2 updates a node if a uid is present and returns the uid again", %{conn: conn} do
