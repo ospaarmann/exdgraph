@@ -92,7 +92,7 @@ defmodule ExDgraph.Protocol do
     {:ok, state}
   end
 
-  defp execute(%QueryStatement{statement: statement}, params, _, channel) do
+  defp execute(%QueryStatement{statement: statement}, _params, _, channel) do
     request = ExDgraph.Api.Request.new(query: statement)
 
     case ExDgraph.Api.Dgraph.Stub.query(channel, request) do
@@ -107,18 +107,19 @@ defmodule ExDgraph.Protocol do
       {:error, e, channel}
   end
 
-  defp execute(%MutationStatement{statement: statement, set_json: set_json}, params, _, channel) do
+  defp execute(%MutationStatement{statement: statement, set_json: set_json}, _params, _, channel) do
     # Build request
-    cond do
-      statement != "" and set_json == "" ->
-        request = ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
+    request =
+      cond do
+        statement != "" and set_json == "" ->
+          ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
 
-      set_json != "" and set_json != "" ->
-        request = ExDgraph.Api.Mutation.new(set_json: set_json, commit_now: true)
+        set_json != "" and set_json != "" ->
+          ExDgraph.Api.Mutation.new(set_json: set_json, commit_now: true)
 
-      statement != "" and set_json != "" ->
-        raise Exception, code: 2, message: "Both set_json and statement defined"
-    end
+        statement != "" and set_json != "" ->
+          raise Exception, code: 2, message: "Both set_json and statement defined"
+      end
 
     case ExDgraph.Api.Dgraph.Stub.mutate(channel, request) do
       {:ok, res} ->
@@ -134,7 +135,7 @@ defmodule ExDgraph.Protocol do
 
   defp execute(
          %OperationStatement{drop_all: drop_all, schema: schema, drop_attr: drop_attr},
-         params,
+         _params,
          _,
          channel
        ) do
