@@ -41,7 +41,8 @@ defmodule ExDgraph do
     hostname: 'localhost',
     port: 9080,
     pool_size: 5,
-    max_overflow: 1
+    max_overflow: 1,
+    keepalive: :infinity
   ```
 
   The available configuration options are:
@@ -59,7 +60,8 @@ defmodule ExDgraph do
     certfile: nil,
     keyfile: nil,
     cacertfile: nil,
-    retry_linear_backoff: {delay: 150, factor: 2, tries: 3}
+    retry_linear_backoff: {delay: 150, factor: 2, tries: 3},
+    keepalive: infinity
   ```
 
   And finally don't forget to add ExDgraph to the supervisor tree of your app:
@@ -432,6 +434,7 @@ defmodule ExDgraph do
     - `:cacertfile` - Path to your CA certificate you used to sign the certificate and key.
       Check the Wiki on how to set this up.
     - `:retry_linear_backoff` - Retry options. Defaults to `{delay: 150, factor: 2, tries: 3}`
+    - `:keepalive` - Time in ms between pings to the server. Default value is `:infinity` which disables pings completely. Dgraph drops the connection on pings atm so it is disabled for now.
 
   ## Example of valid configurations (i.e. defined in config/dev.exs) and usage:
 

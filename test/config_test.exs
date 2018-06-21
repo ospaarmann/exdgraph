@@ -23,6 +23,8 @@ defmodule Config.Test do
     assert config[:max_overflow] == 7
     assert config[:ssl] == false
     assert config[:tls_client_auth] == false
+    assert config[:enforce_struct_schema] == false
+    assert config[:keepalive] == :infinity
   end
 
   test "standard ExDgraph default configuration" do
@@ -32,6 +34,8 @@ defmodule Config.Test do
     assert config[:port] == 9080
     assert config[:ssl] == false
     assert config[:tls_client_auth] == false
+    assert config[:enforce_struct_schema] == false
+    assert config[:keepalive] == :infinity
   end
 
   test "ssl config from parameters" do

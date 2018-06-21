@@ -18,7 +18,10 @@ defmodule ExDgraph.Protocol do
     host = to_charlist(ExDgraph.config(:hostname))
     port = ExDgraph.config(:port)
 
-    opts = set_ssl_opts()
+    opts =
+      []
+      |> set_ssl_opts()
+      |> Keyword.put(:adapter_opts, %{http2_opts: %{keepalive: ExDgraph.config(:keepalive)}})
 
     case GRPC.Stub.connect("#{host}:#{port}", opts) do
       {:ok, channel} ->
