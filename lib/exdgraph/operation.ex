@@ -29,7 +29,8 @@ defmodule ExDgraph.Operation do
 
   defp operation_commit(conn, operation) do
     operation_processed =
-      Map.put_new(operation, :drop_all, false)
+      operation
+      |> Map.put_new(:drop_all, false)
       |> Map.put_new(:drop_attr, "")
       |> Map.put_new(:schema, "")
 
