@@ -2,7 +2,7 @@
 
 **This is work in progress and not functional as of now. If you want to help, please drop me a message. Any help is greatly appreciated!**
 
-ExDgraph is a gRPC based client for the [Dgraph](https://github.com/dgraph-io/dgraph) database. It uses the [DBConnection](https://hexdocs.pm/db_connection/DBConnection.html) behaviour to support transactions and connection pooling via [Poolboy](https://github.com/devinus/poolboy). Works with Dgraph v1.0.4 (latest).
+ExDgraph is a gRPC based client for the [Dgraph](https://github.com/dgraph-io/dgraph) database. It uses the [DBConnection](https://hexdocs.pm/db_connection/DBConnection.html) behaviour to support transactions and connection pooling via [Poolboy](https://github.com/devinus/poolboy). Works with Dgraph v1.0.5 (latest).
 
 WORK IN PROGRESS.
 
@@ -29,7 +29,7 @@ Add the package `ex_dgraph` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_dgraph, "~> 0.2.0-alpha.3"}
+    {:ex_dgraph, "~> 0.2.0-alpha.5"}
   ]
 end
 ```
