@@ -133,19 +133,16 @@ defmodule ExDgraph.Mutation do
   defp insert_tmp_uids(map) when is_map(map) do
     map
     |> Map.update(:uid, "_:#{UUID.uuid4()}", fn existing_uuid -> existing_uuid end)
-    |> Enum.reduce(
-      %{},
-      fn {key, map_value}, a ->
-        Map.merge(a, %{key => insert_tmp_uids(map_value)})
-      end
-    )
+    |> Enum.reduce(%{}, fn {key, map_value}, a ->
+      Map.merge(a, %{key => insert_tmp_uids(map_value)})
+    end)
   end
 
   defp insert_tmp_uids(value), do: value
 
   defp set_tmp_ids_and_schema(map) when is_list(map), do: Enum.map(map, &set_tmp_ids_and_schema/1)
 
-  defp set_tmp_ids_and_schema(map = %x{}) do
+  defp set_tmp_ids_and_schema(%x{} = map) do
     schema = x |> get_schema_name()
 
     map
@@ -154,23 +151,17 @@ defmodule ExDgraph.Mutation do
       nil -> "_:#{UUID.uuid4()}"
       existing_uuid -> existing_uuid
     end)
-    |> Enum.reduce(
-      %{},
-      fn {key, map_value}, a ->
-        set_schema(schema, {key, map_value}, a, @enforce_struct_schema)
-      end
-    )
+    |> Enum.reduce(%{}, fn {key, map_value}, a ->
+      set_schema(schema, {key, map_value}, a, @enforce_struct_schema)
+    end)
   end
 
   defp set_tmp_ids_and_schema(map) when is_map(map) do
     map
     |> Map.update(:uid, "_:#{UUID.uuid4()}", fn existing_uuid -> existing_uuid end)
-    |> Enum.reduce(
-      %{},
-      fn {key, map_value}, a ->
-        Map.merge(a, %{key => set_tmp_ids_and_schema(map_value)})
-      end
-    )
+    |> Enum.reduce(%{}, fn {key, map_value}, a ->
+      Map.merge(a, %{key => set_tmp_ids_and_schema(map_value)})
+    end)
   end
 
   defp set_tmp_ids_and_schema(value), do: value
@@ -186,12 +177,9 @@ defmodule ExDgraph.Mutation do
         false -> existing_uuid
       end
     end)
-    |> Enum.reduce(
-      %{},
-      fn {key, map_value}, a ->
-        Map.merge(a, %{key => replace_tmp_uids(map_value, uids)})
-      end
-    )
+    |> Enum.reduce(%{}, fn {key, map_value}, a ->
+      Map.merge(a, %{key => replace_tmp_uids(map_value, uids)})
+    end)
   end
 
   defp replace_tmp_uids(value, _uids), do: value
@@ -207,14 +195,11 @@ defmodule ExDgraph.Mutation do
         false -> existing_uuid
       end
     end)
-    |> Enum.reduce(
-      %{},
-      fn {key, map_value}, a ->
-        # delete the schema prefix
-        key = key |> to_string() |> String.split(".") |> List.last() |> String.to_existing_atom()
-        Map.merge(a, %{key => replace_tmp_struct_uids(map_value, uids)})
-      end
-    )
+    |> Enum.reduce(%{}, fn {key, map_value}, a ->
+      # delete the schema prefix
+      key = key |> to_string() |> String.split(".") |> List.last() |> String.to_existing_atom()
+      Map.merge(a, %{key => replace_tmp_struct_uids(map_value, uids)})
+    end)
   end
 
   defp replace_tmp_struct_uids(value, _uids), do: value
