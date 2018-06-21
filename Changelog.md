@@ -14,3 +14,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Fixed
 - The `keepalive` option fixes the `gun_down` error for now. The connection was dropped by Dgraph when the server was pinged. The server sent a `{goaway,0,enhance_your_calm,<<"too_many_pings">>}` message. For now pings are disabled. This is not ideal since this way ExDgraph cannot check if the connection is still alive. But I have to wait for Dgraph to get back to me on this issue. You find the issue here: https://github.com/dgraph-io/dgraph/issues/2444
+- Removed some warnings and refactored a couple of things.
