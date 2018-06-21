@@ -4,8 +4,6 @@ defmodule ExDgraph.Mutation do
   """
   alias ExDgraph.{Exception, MutationStatement, Transform}
 
-  @enforce_struct_schema Application.get_env(:ex_dgraph, ExDgraph)[:enforce_struct_schema]
-
   @doc false
   def mutation!(conn, statement) do
     case mutation_commit(conn, statement) do
@@ -152,7 +150,7 @@ defmodule ExDgraph.Mutation do
       existing_uuid -> existing_uuid
     end)
     |> Enum.reduce(%{}, fn {key, map_value}, a ->
-      set_schema(schema, {key, map_value}, a, @enforce_struct_schema)
+      set_schema(schema, {key, map_value}, a, ExDgraph.config(:enforce_struct_schema))
     end)
   end
 

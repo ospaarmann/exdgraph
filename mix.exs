@@ -4,7 +4,7 @@ defmodule ExDgraph.MixProject do
   def project do
     [
       app: :ex_dgraph,
-      version: "0.2.0-alpha.4",
+      version: "0.2.0-alpha.5",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
