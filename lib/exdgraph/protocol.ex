@@ -44,19 +44,19 @@ defmodule ExDgraph.Protocol do
   end
 
   @doc "Callback for DBConnection.disconnect/1"
-  def disconnect(_err, state) do
+  def disconnect(_err, _state) do
   end
 
   @doc "Callback for DBConnection.handle_begin/1"
-  def handle_begin(_opts, state) do
+  def handle_begin(_opts, _state) do
   end
 
   @doc "Callback for DBConnection.handle_rollback/1"
-  def handle_rollback(_opts, state) do
+  def handle_rollback(_opts, _state) do
   end
 
   @doc "Callback for DBConnection.handle_commit/1"
-  def handle_commit(_opts, state) do
+  def handle_commit(_opts, _state) do
   end
 
   @doc "Callback for DBConnection.handle_execute/1"
@@ -107,27 +107,23 @@ defmodule ExDgraph.Protocol do
       {:error, e, channel}
   end
 
-  defp execute(%MutationStatement{statement: statement, set_json: set_json}, _params, _, channel) do
-    # Build request
-    request =
-      cond do
-        statement != "" and set_json == "" ->
-          ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
+  defp execute(%MutationStatement{statement: statement, set_json: ""}, _params, _, channel) do
+    request = ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
+    do_mutate(channel, request)
+  end
 
-        set_json != "" and set_json != "" ->
-          ExDgraph.Api.Mutation.new(set_json: set_json, commit_now: true)
+  defp execute(%MutationStatement{statement: "", set_json: set_json}, _params, _, channel) do
+    request = ExDgraph.Api.Mutation.new(set_json: set_json, commit_now: true)
+    do_mutate(channel, request)
+  end
 
-        statement != "" and set_json != "" ->
-          raise Exception, code: 2, message: "Both set_json and statement defined"
-      end
-
-    case ExDgraph.Api.Dgraph.Stub.mutate(channel, request) do
-      {:ok, res} ->
-        {:ok, res, channel}
-
-      {:error, f} ->
-        raise Exception, code: f.status, message: f.message
-    end
+  defp execute(
+         %MutationStatement{statement: _statement, set_json: _set_json},
+         _params,
+         _,
+         channel
+       ) do
+    raise Exception, code: 2, message: "Both set_json and statement defined"
   rescue
     e ->
       {:error, e, channel}
@@ -142,6 +138,19 @@ defmodule ExDgraph.Protocol do
     operation = Api.Operation.new(drop_all: drop_all, schema: schema, drop_attr: drop_attr)
 
     case ExDgraph.Api.Dgraph.Stub.alter(channel, operation) do
+      {:ok, res} ->
+        {:ok, res, channel}
+
+      {:error, f} ->
+        raise Exception, code: f.status, message: f.message
+    end
+  rescue
+    e ->
+      {:error, e, channel}
+  end
+
+  defp do_mutate(channel, request) do
+    case ExDgraph.Api.Dgraph.Stub.mutate(channel, request) do
       {:ok, res} ->
         {:ok, res, channel}
 
