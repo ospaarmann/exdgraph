@@ -4,7 +4,8 @@ elixir:
   - 1.6
 
 otp_release:
-  - 20.0
+  - 20.3
+  - 21.0
 
 cache:
   directories:
