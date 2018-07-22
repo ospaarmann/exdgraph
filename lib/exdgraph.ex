@@ -801,14 +801,14 @@ defmodule ExDgraph do
       %{:ok, %ExDgraph.Api.Payload{Data: ""}}
 
   """
-  @spec operation(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec operation(conn, map) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate operation(conn, statement), to: Operation
 
   @doc """
   The same as `operation/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec operation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
+  @spec operation!(conn, map) :: ExDgraph.Response | ExDgraph.Exception
   defdelegate operation!(conn, statement), to: Operation
 
   ## Helpers

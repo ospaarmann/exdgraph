@@ -6,6 +6,7 @@ defmodule ExDgraph.Operation do
   alias ExDgraph.{Exception, OperationStatement}
 
   @doc false
+  @spec operation!(DBConnection.conn(), map) :: ExDgraph.Response | ExDgraph.Exception
   def operation!(conn, operation) do
     case operation_commit(conn, operation) do
       {:error, f} ->
@@ -17,6 +18,7 @@ defmodule ExDgraph.Operation do
   end
 
   @doc false
+  @spec operation(DBConnection.conn(), map) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   def operation(conn, operation) do
     case operation_commit(conn, operation) do
       {:error, f} ->
