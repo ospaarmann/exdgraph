@@ -709,14 +709,14 @@ defmodule ExDgraph do
         }
       }
   """
-  @spec set_map(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_map(conn, map) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate set_map(conn, map), to: Mutation
 
   @doc """
   The same as `set_map/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec set_map!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_map!(conn, map) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate set_map!(conn, map), to: Mutation
 
   @doc """
@@ -762,14 +762,14 @@ defmodule ExDgraph do
         }
       }
   """
-  @spec set_struct(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_struct(conn, map) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate set_struct(conn, map), to: Mutation
 
   @doc """
   The same as `set_struct/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec set_struct!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_struct!(conn, map) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate set_struct!(conn, map), to: Mutation
 
   ## Operation
