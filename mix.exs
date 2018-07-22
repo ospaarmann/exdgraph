@@ -49,12 +49,12 @@ defmodule ExDgraph.MixProject do
       {:poison, "~> 3.1"},
       {:poolboy, "~> 1.5.1"},
       {:db_connection, "~> 1.1"},
-      {:retry, "~> 0.8"},
+      {:retry, "~> 0.10"},
       {:uuid, "~> 1.1"},
-      {:morphix, "~> 0.2.1"},
-      {:ex_doc, "~> 0.16", only: :dev, runtime: false},
-      {:mix_test_watch, "~> 0.5", only: :dev, runtime: false},
-      {:excoveralls, "~> 0.8", only: :test},
+      {:morphix, "~> 0.3"},
+      {:ex_doc, "~> 0.18", only: :dev, runtime: false},
+      {:mix_test_watch, "~> 0.6", only: :dev, runtime: false},
+      {:excoveralls, "~> 0.9", only: :test},
       {:credo, "~> 0.9.1", only: [:dev, :test], runtime: false}
     ]
   end
