@@ -23,7 +23,8 @@ defmodule ExDgraph.MixProject do
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
-      ]
+      ],
+      dialyzer: [plt_add_deps: true]
     ]
   end
 
@@ -54,6 +55,7 @@ defmodule ExDgraph.MixProject do
       {:morphix, "~> 0.3"},
       {:ex_doc, "~> 0.18", only: :dev, runtime: false},
       {:mix_test_watch, "~> 0.6", only: :dev, runtime: false},
+      {:dialyxir, "~> 1.0.0-rc.2", only: :dev, runtime: false},
       {:excoveralls, "~> 0.9", only: :test},
       {:credo, "~> 0.9.1", only: [:dev, :test], runtime: false}
     ]
