@@ -1,6 +1,6 @@
 # ExDgraph [![Build Status](https://travis-ci.org/ospaarmann/exdgraph.svg?branch=master)](https://travis-ci.org/ospaarmann/exdgraph) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Coverage Status](https://coveralls.io/repos/github/ospaarmann/exdgraph/badge.svg?branch=master&refresh=1)](https://coveralls.io/github/ospaarmann/exdgraph?branch=master)
 
-**This is work in progress and not functional as of now. If you want to help, please drop me a message. Any help is greatly appreciated!**
+**This is work in progress. It is functional but I would be careful using it in production. If you want to help, please drop me a message. Any help is greatly appreciated!**
 
 ExDgraph is a gRPC based client for the [Dgraph](https://github.com/dgraph-io/dgraph) database. It uses the [DBConnection](https://hexdocs.pm/db_connection/DBConnection.html) behaviour to support transactions and connection pooling via [Poolboy](https://github.com/devinus/poolboy). Works with Dgraph v1.0.5 (latest).
 
