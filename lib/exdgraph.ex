@@ -709,14 +709,14 @@ defmodule ExDgraph do
         }
       }
   """
-  @spec set_map(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_map(conn, map) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate set_map(conn, map), to: Mutation
 
   @doc """
   The same as `set_map/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec set_map!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_map!(conn, map) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate set_map!(conn, map), to: Mutation
 
   @doc """
@@ -762,14 +762,14 @@ defmodule ExDgraph do
         }
       }
   """
-  @spec set_struct(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_struct(conn, map) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate set_struct(conn, map), to: Mutation
 
   @doc """
   The same as `set_struct/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec set_struct!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_struct!(conn, map) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate set_struct!(conn, map), to: Mutation
 
   ## Operation
@@ -801,14 +801,14 @@ defmodule ExDgraph do
       %{:ok, %ExDgraph.Api.Payload{Data: ""}}
 
   """
-  @spec operation(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec operation(conn, map) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
   defdelegate operation(conn, statement), to: Operation
 
   @doc """
   The same as `operation/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec operation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
+  @spec operation!(conn, map) :: ExDgraph.Response | ExDgraph.Exception
   defdelegate operation!(conn, statement), to: Operation
 
   ## Helpers

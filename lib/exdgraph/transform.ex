@@ -10,11 +10,7 @@ defmodule ExDgraph.Transform do
   def transform_query(%ExDgraph.Api.Response{json: json, schema: schema, txn: txn}) do
     decoded = Poison.decode!(json)
 
-    transformed =
-      case Morphix.atomorphiform(decoded) do
-        {:ok, parsed} -> parsed
-        _ -> json
-      end
+    {:ok, transformed} = Morphix.atomorphiform(decoded)
 
     %{
       result: transformed,
