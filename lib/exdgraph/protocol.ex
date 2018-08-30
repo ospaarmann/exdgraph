@@ -87,7 +87,7 @@ defmodule ExDgraph.Protocol do
     end
   end
 
-  def handle_info({:gun_up, _pid, _protocol}) do
+  def handle_info({:gun_up, _pid, _protocol}, state) do
     Logger.debug(fn ->
       [inspect(__MODULE__), ?\s, inspect(self()), " received gun_up from server"]
     end)
@@ -95,7 +95,7 @@ defmodule ExDgraph.Protocol do
      {:ok, state}
   end
 
-  def handle_info({:gun_down, _pid, _protocol, _level, _, _}) do
+  def handle_info({:gun_down, _pid, _protocol, _level, _, _}, state) do
     Logger.debug(fn ->
       [inspect(__MODULE__), ?\s, inspect(self()), " received gun_down from server"]
     end)
