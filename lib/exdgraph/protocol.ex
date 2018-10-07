@@ -87,6 +87,22 @@ defmodule ExDgraph.Protocol do
     end
   end
 
+  def handle_info({:gun_up, _pid, _protocol}, state) do
+    Logger.debug(fn ->
+      [inspect(__MODULE__), ?\s, inspect(self()), " received gun_up from server"]
+    end)
+
+     {:ok, state}
+  end
+
+  def handle_info({:gun_down, _pid, _protocol, _level, _, _}, state) do
+    Logger.debug(fn ->
+      [inspect(__MODULE__), ?\s, inspect(self()), " received gun_down from server"]
+    end)
+
+    {:ok, state}
+  end
+
   def handle_info(msg, state) do
     Logger.error(fn ->
       [inspect(__MODULE__), ?\s, inspect(self()), " received unexpected message: " | inspect(msg)]
