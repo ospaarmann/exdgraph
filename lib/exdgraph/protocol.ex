@@ -83,6 +83,10 @@ defmodule ExDgraph.Protocol do
              {:ok, channel} <- checkout(channel) do
           execute(query, params, opts, channel)
         end
+      after
+        result -> result
+      else
+        error -> error
       end
     end
   end
