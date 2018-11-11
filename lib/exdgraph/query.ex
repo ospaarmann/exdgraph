@@ -5,21 +5,21 @@ defmodule ExDgraph.Query do
   alias ExDgraph.{Exception, QueryStatement, Transform}
 
   @doc false
-  def query!(conn, statement) do
-    case query_commit(conn, statement) do
-      {:error, f} ->
-        raise Exception, code: f.code, message: f.message
-
-      r ->
-        r
-    end
-  end
-
-  @doc false
   def query(conn, statement) do
     case query_commit(conn, statement) do
       {:error, f} -> {:error, code: f.code, message: f.message}
       r -> {:ok, r}
+    end
+  end
+
+  @doc false
+  def query!(conn, statement) do
+    case query(conn, statement) do
+      {:ok, r} ->
+        r
+
+      {:error, code: code, message: message} ->
+        raise Exception, code: code, message: message
     end
   end
 
