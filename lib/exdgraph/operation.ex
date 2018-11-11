@@ -2,7 +2,6 @@ defmodule ExDgraph.Operation do
   @moduledoc """
   Provides the functions for the callbacks from the DBConnection behaviour.
   """
-  alias ExDgraph.Api.Operation
   alias ExDgraph.{Exception, OperationStatement}
 
   @doc false
