@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Update gun to stable `v1.2.0`.
 - Test against Dgraph `v1.0.11`.
 - Upgrade elixir-grpc to `v0.3.1`.
+- Upgrade gun to `v1.3.0`.
 
 ## [0.2.0-alpha.5] - 2018-06-21
 ### Fixed
