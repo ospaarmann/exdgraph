@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-- Test against Dgraph v1.0.11.
+- Handle `:gun_up` and `:gun_down` messages as debug level for now.
+- Update gun to stable `v1.2.0`.
+- Test against Dgraph `v1.0.11`.
+- Upgrade elixir-grpc to `v0.3.1`.
 
 ## [0.2.0-alpha.5] - 2018-06-21
 ### Fixed
