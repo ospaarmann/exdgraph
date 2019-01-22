@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Upgrade poolboy to `v1.5.2`.
 - Upgrade retry to `v0.11.2`.
 - Upgrade morphix to `v0.6.0`.
+- Upgrade ex_doc to `v0.18.0`.
 - Reduce duplicate code. Thanks to @optikfluffel for the contribution.
 
 ## [0.2.0-alpha.5] - 2018-06-21

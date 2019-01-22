@@ -52,7 +52,7 @@ defmodule ExDgraph.MixProject do
       {:retry, "~> 0.11.2"},
       {:uuid, "~> 1.1"},
       {:morphix, "~> 0.6.0"},
-      {:ex_doc, "~> 0.16", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
       {:mix_test_watch, "~> 0.5", only: :dev, runtime: false},
       {:excoveralls, "~> 0.8", only: :test},
       {:credo, "~> 0.9.1", only: [:dev, :test], runtime: false}
