@@ -2,19 +2,7 @@ defmodule ExDgraph.Operation do
   @moduledoc """
   Provides the functions for the callbacks from the DBConnection behaviour.
   """
-  alias ExDgraph.Api.Operation
   alias ExDgraph.{Exception, OperationStatement}
-
-  @doc false
-  def operation!(conn, operation) do
-    case operation_commit(conn, operation) do
-      {:error, f} ->
-        raise Exception, code: f.code, message: f.message
-
-      r ->
-        r
-    end
-  end
 
   @doc false
   def operation(conn, operation) do
@@ -24,6 +12,17 @@ defmodule ExDgraph.Operation do
 
       r ->
         {:ok, r}
+    end
+  end
+
+  @doc false
+  def operation!(conn, operation) do
+    case operation(conn, operation) do
+      {:ok, r} ->
+        r
+
+      {:error, code: code, message: message} ->
+        raise Exception, code: code, message: message
     end
   end
 

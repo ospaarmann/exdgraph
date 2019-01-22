@@ -5,21 +5,21 @@ defmodule ExDgraph.Mutation do
   alias ExDgraph.{Exception, MutationStatement, Transform}
 
   @doc false
-  def mutation!(conn, statement) do
-    case mutation_commit(conn, statement) do
-      {:error, f} ->
-        raise Exception, code: f.code, message: f.message
-
-      r ->
-        r
-    end
-  end
-
-  @doc false
   def mutation(conn, statement) do
     case mutation_commit(conn, statement) do
       {:error, f} -> {:error, code: f.code, message: f.message}
       r -> {:ok, r}
+    end
+  end
+
+  @doc false
+  def mutation!(conn, statement) do
+    case mutation(conn, statement) do
+      {:ok, r} ->
+        r
+
+      {:error, code: code, message: message} ->
+        raise Exception, code: code, message: message
     end
   end
 
@@ -36,15 +36,12 @@ defmodule ExDgraph.Mutation do
 
   @doc false
   def set_map!(conn, map) do
-    map_with_tmp_uids = insert_tmp_uids(map)
-    json = Poison.encode!(map_with_tmp_uids)
-
-    case set_map_commit(conn, json, map_with_tmp_uids) do
-      {:error, f} ->
-        raise Exception, code: f.code, message: f.message
-
-      r ->
+    case set_map(conn, map) do
+      {:ok, r} ->
         r
+
+      {:error, code: code, message: message} ->
+        raise Exception, code: code, message: message
     end
   end
 
@@ -61,15 +58,12 @@ defmodule ExDgraph.Mutation do
 
   @doc false
   def set_struct!(conn, struct) do
-    uids_and_schema_map = set_tmp_ids_and_schema(struct)
-    json = Poison.encode!(uids_and_schema_map)
-
-    case set_struct_commit(conn, json, uids_and_schema_map) do
-      {:error, f} ->
-        raise Exception, code: f.code, message: f.message
-
-      r ->
+    case set_struct(conn, struct) do
+      {:ok, r} ->
         r
+
+      {:error, code: code, message: message} ->
+        raise Exception, code: code, message: message
     end
   end
 
