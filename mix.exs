@@ -49,7 +49,7 @@ defmodule ExDgraph.MixProject do
       {:poison, "~> 4.0.1"},
       {:poolboy, "~> 1.5.2"},
       {:db_connection, "~> 1.1"},
-      {:retry, "~> 0.8"},
+      {:retry, "~> 0.11.2"},
       {:uuid, "~> 1.1"},
       {:morphix, "~> 0.2.1"},
       {:ex_doc, "~> 0.16", only: :dev, runtime: false},

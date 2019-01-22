@@ -74,7 +74,7 @@ defmodule ExDgraph.Protocol do
 
       delay_stream =
         delay
-        |> lin_backoff(factor)
+        |> linear_backoff(factor)
         |> cap(ExDgraph.config(:timeout))
         |> Stream.take(tries)
 
@@ -96,7 +96,7 @@ defmodule ExDgraph.Protocol do
       [inspect(__MODULE__), ?\s, inspect(self()), " received gun_up from server"]
     end)
 
-     {:ok, state}
+    {:ok, state}
   end
 
   def handle_info({:gun_down, _pid, _protocol, _level, _, _}, state) do
