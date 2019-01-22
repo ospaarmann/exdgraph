@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Upgrade poison to `v4.0.1`.
 - Upgrade poolboy to `v1.5.2`.
 - Upgrade retry to `v0.11.2`.
+- Upgrade morphix to `v0.6.0`.
 
 ## [0.2.0-alpha.5] - 2018-06-21
 ### Fixed
