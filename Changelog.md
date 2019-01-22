@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+- Test against Dgraph v1.0.11.
+
 ## [0.2.0-alpha.5] - 2018-06-21
 ### Fixed
 - Don't use module attribute for configuration values since they are set on compilation time. This prevented the enforce_struct_schema feature to work properly.

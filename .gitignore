@@ -27,3 +27,6 @@ exdgraph-*.tar
 
 # TLS test certs for testing SSL / TLS authentication
 /tls-test-certs/
+
+# Data directory when running Dgraph from docker-compose for test purposes
+/dgraph_data
