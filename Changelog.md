@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.2.0-beta.1] - 2019-01-22
+
 - Handle `:gun_up` and `:gun_down` messages as debug level for now.
 - Update gun to stable `v1.2.0`.
 - Test against Dgraph `v1.0.11`.
@@ -15,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Upgrade poolboy to `v1.5.2`.
 - Upgrade retry to `v0.11.2`.
 - Upgrade morphix to `v0.6.0`.
+- Reduce duplicate code. Thanks to @optikfluffel for the contribution.
 
 ## [0.2.0-alpha.5] - 2018-06-21
 ### Fixed
