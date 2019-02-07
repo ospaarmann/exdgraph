@@ -54,8 +54,8 @@ defmodule ExDgraph.MixProject do
       {:morphix, "~> 0.6.0"},
       {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
       {:mix_test_watch, "~> 0.5", only: :dev, runtime: false},
-      {:excoveralls, "~> 0.8", only: :test},
-      {:credo, "~> 0.9.1", only: [:dev, :test], runtime: false}
+      {:excoveralls, "~> 0.10", only: :test},
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 
