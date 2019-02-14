@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.2.0-beta.1] - 2019-01-22
+
+- Handle `:gun_up` and `:gun_down` messages as debug level for now.
+- Update gun to stable `v1.2.0`.
+- Test against Dgraph `v1.0.11`.
+- Upgrade elixir-grpc to `v0.3.1`.
+- Upgrade gun to `v1.3.0`.
+- Upgrade poison to `v4.0.1`.
+- Upgrade poolboy to `v1.5.2`.
+- Upgrade retry to `v0.11.2`.
+- Upgrade morphix to `v0.6.0`.
+- Upgrade ex_doc to `v0.18.0`.
+- Reduce duplicate code. Thanks to @optikfluffel for the contribution.
+
 ## [0.2.0-alpha.5] - 2018-06-21
 ### Fixed
 - Don't use module attribute for configuration values since they are set on compilation time. This prevented the enforce_struct_schema feature to work properly.

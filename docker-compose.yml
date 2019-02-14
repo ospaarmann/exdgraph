@@ -1,10 +1,10 @@
 version: "3.2"
 services:
   zero:
-    image: dgraph/dgraph:latest
+    image: dgraph/dgraph:v1.0.11
     volumes:
-      - type: volume
-        source: dgraph
+      - type: bind
+        source: ./dgraph_data
         target: /dgraph
         volume:
           nocopy: true
@@ -14,10 +14,10 @@ services:
     restart: on-failure
     command: dgraph zero --my=zero:5080
   server:
-    image: dgraph/dgraph:latest
+    image: dgraph/dgraph:v1.0.11
     volumes:
-      - type: volume
-        source: dgraph
+      - type: bind
+        source: ./dgraph_data
         target: /dgraph
         volume:
           nocopy: true
@@ -25,12 +25,12 @@ services:
       - 8080:8080
       - 9080:9080
     restart: on-failure
-    command: dgraph server --my=server:7080 --lru_mb=2048 --zero=zero:5080
+    command: dgraph alpha --my=server:7080 --lru_mb=2048 --zero=zero:5080
   ratel:
-    image: dgraph/dgraph:latest
+    image: dgraph/dgraph:v1.0.11
     volumes:
-      - type: volume
-        source: dgraph
+      - type: bind
+        source: ./dgraph_data
         target: /dgraph
         volume:
           nocopy: true

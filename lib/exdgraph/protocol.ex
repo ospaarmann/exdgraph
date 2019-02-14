@@ -74,7 +74,7 @@ defmodule ExDgraph.Protocol do
 
       delay_stream =
         delay
-        |> lin_backoff(factor)
+        |> linear_backoff(factor)
         |> cap(ExDgraph.config(:timeout))
         |> Stream.take(tries)
 
@@ -83,8 +83,28 @@ defmodule ExDgraph.Protocol do
              {:ok, channel} <- checkout(channel) do
           execute(query, params, opts, channel)
         end
+      after
+        result -> result
+      else
+        error -> error
       end
     end
+  end
+
+  def handle_info({:gun_up, _pid, _protocol}, state) do
+    Logger.debug(fn ->
+      [inspect(__MODULE__), ?\s, inspect(self()), " received gun_up from server"]
+    end)
+
+    {:ok, state}
+  end
+
+  def handle_info({:gun_down, _pid, _protocol, _level, _, _}, state) do
+    Logger.debug(fn ->
+      [inspect(__MODULE__), ?\s, inspect(self()), " received gun_down from server"]
+    end)
+
+    {:ok, state}
   end
 
   def handle_info(msg, state) do
