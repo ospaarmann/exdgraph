@@ -48,6 +48,7 @@ defmodule ExDgraph.Protocol do
 
   @doc "Callback for DBConnection.disconnect/1"
   def disconnect(_err, _state) do
+    :ok
   end
 
   @doc "Callback for DBConnection.handle_begin/1"
@@ -117,8 +118,8 @@ defmodule ExDgraph.Protocol do
 
   defp execute(%QueryStatement{statement: statement}, _params, _, channel) do
     request = ExDgraph.Api.Request.new(query: statement)
-
-    case ExDgraph.Api.Dgraph.Stub.query(channel, request) do
+    timeout = ExDgraph.config(:timeout)
+    case ExDgraph.Api.Dgraph.Stub.query(channel, request, timeout: timeout) do
       {:ok, res} ->
         {:ok, res, channel}
 
@@ -159,8 +160,8 @@ defmodule ExDgraph.Protocol do
          channel
        ) do
     operation = Api.Operation.new(drop_all: drop_all, schema: schema, drop_attr: drop_attr)
-
-    case ExDgraph.Api.Dgraph.Stub.alter(channel, operation) do
+    timeout = ExDgraph.config(:timeout)
+    case ExDgraph.Api.Dgraph.Stub.alter(channel, operation, timeout: timeout) do
       {:ok, res} ->
         {:ok, res, channel}
 
@@ -173,7 +174,8 @@ defmodule ExDgraph.Protocol do
   end
 
   defp do_mutate(channel, request) do
-    case ExDgraph.Api.Dgraph.Stub.mutate(channel, request) do
+    timeout = ExDgraph.config(:timeout)
+    case ExDgraph.Api.Dgraph.Stub.mutate(channel, request, timeout: timeout) do
       {:ok, res} ->
         {:ok, res, channel}
 

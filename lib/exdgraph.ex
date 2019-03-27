@@ -53,7 +53,7 @@ defmodule ExDgraph do
     port: 9080,
     pool_size: 5,
     max_overflow: 1
-    timeout: 15_000,
+    timeout: 15_000, # This value is used for the DBConnection timeout and the GRPC client deadline
     pool: DBConnection.Poolboy,
     ssl: false,
     tls_client_auth: false,
