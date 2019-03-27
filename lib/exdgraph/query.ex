@@ -7,7 +7,7 @@ defmodule ExDgraph.Query do
   @doc false
   def query(conn, statement) do
     case query_commit(conn, statement) do
-      {:error, f} -> {:error, code: f.code, message: f.message}
+      {:error, f} -> {:error, code: Map.get(f, :code, Map.get(f, :status)), message: f.message}
       r -> {:ok, r}
     end
   end
@@ -32,12 +32,10 @@ defmodule ExDgraph.Query do
         other -> other
       end
     end
-
-    # Response.transform(DBConnection.run(conn, exec, run_opts()))
     DBConnection.run(conn, exec, run_opts())
   end
 
   defp run_opts do
-    [pool: ExDgraph.config(:pool)]
+    [pool: ExDgraph.config(:pool), timeout: ExDgraph.config(:timeout)]
   end
 end
