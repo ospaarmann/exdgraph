@@ -1,7 +1,7 @@
 version: "3.2"
 services:
   zero:
-    image: dgraph/dgraph:v1.0.11
+    image: dgraph/dgraph:v1.0.13
     volumes:
       - type: bind
         source: ./dgraph_data
@@ -14,7 +14,7 @@ services:
     restart: on-failure
     command: dgraph zero --my=zero:5080
   server:
-    image: dgraph/dgraph:v1.0.11
+    image: dgraph/dgraph:v1.0.13
     volumes:
       - type: bind
         source: ./dgraph_data
@@ -27,7 +27,7 @@ services:
     restart: on-failure
     command: dgraph alpha --my=server:7080 --lru_mb=2048 --zero=zero:5080
   ratel:
-    image: dgraph/dgraph:v1.0.11
+    image: dgraph/dgraph:v1.0.13
     volumes:
       - type: bind
         source: ./dgraph_data
