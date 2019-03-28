@@ -2,7 +2,7 @@
 
 **ExDgraph is functional but I would be careful using it in production. If you want to help, please drop me a message. Any help is greatly appreciated!**
 
-ExDgraph is a gRPC based client for the [Dgraph](https://github.com/dgraph-io/dgraph) database. It uses the [DBConnection](https://hexdocs.pm/db_connection/DBConnection.html) behaviour to support transactions and connection pooling via [Poolboy](https://github.com/devinus/poolboy). Works with Dgraph v1.0.11 (latest).
+ExDgraph is a gRPC based client for the [Dgraph](https://github.com/dgraph-io/dgraph) database. It uses the [DBConnection](https://hexdocs.pm/db_connection/DBConnection.html) behaviour to support transactions and connection pooling via [Poolboy](https://github.com/devinus/poolboy). Works with Dgraph v1.0.13 (latest).
 
 > Dgraph is an open source, horizontally scalable and distributed graph database, providing ACID transactions, consistent replication and linearizable reads. [...] Dgraph's goal is to provide Google production level scale and throughput, with low enough latency to be serving real time user queries, over terabytes of structured data. ([Source](https://github.com/dgraph-io/dgraph))
 
@@ -27,7 +27,7 @@ Add the package `ex_dgraph` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_dgraph, "~> 0.2.0-beta.1"}
+    {:ex_dgraph, "~> 0.2.0-beta.2"}
   ]
 end
 ```
@@ -82,13 +82,13 @@ def start(_type, _args) do
 end
 ```
 
-**Important:** Please also note the instructions further down on how to run ExDgraph with Phoenix 1.3. It requires Cowboy 2 which means you have to change some things.
-
 ## Usage
 
-Again, this is work in progress. I'll add more examples on how to use this on the go. So far you can connect to a server and run a simple query. I recommend installing and running Dgraph locally with Docker. You find information on how to do that [here](https://docs.dgraph.io/get-started/#from-docker-image). To use this simple example you first have to [import the example data](https://docs.dgraph.io/get-started/#step-3-run-queries). You can just open [http://localhost:8000](http://localhost:8000) in your browser when Dgraph is running to execute and visualize queries using Ratel.
+I recommend installing and running Dgraph locally with Docker. You find information on how to do that [here](https://docs.dgraph.io/get-started/#from-docker-image). To use this simple example you first have to [import the example data](https://docs.dgraph.io/get-started/#step-3-run-queries). You can just open [http://localhost:8000](http://localhost:8000) in your browser when Dgraph is running to execute and visualize queries using Ratel.
 
-At the moment simple queries, mutations and operations are supported via the DBConnection behaviour. Everything else is done directly via the Protobuf API. This will change. Check the tests for examples.
+At the moment simple queries, mutations and operations are supported. And to make things easier ExDgraph returns an Elixir map and you can also just insert a map. This allows you to insert a complex dataset with vertices and edges in one call. To make things even better: If there is a `uid` present anywhere in the map the record isn't inserted but updated. This way you can update and add records in one go.
+
+Also check the tests for more examples.
 
 **Example for a query**
 
@@ -266,6 +266,8 @@ ExDgraph.operation(conn, %{schema: @testing_schema})
 
 **Example for a raw query**
 
+This is an example on how to use the Protobuf API with GRPC directly and how to extend the library.
+
 ```elixir
 # Connect to Server
 {:ok, channel} = GRPC.Stub.connect("#localhost:9080")
@@ -296,63 +298,8 @@ request = ExDgraph.Api.Request.new(query: query)
 json = Poison.decode!(msg.json)
 ```
 
-## Using with Phoenix 1.3
-Since grpc-elixir needs Cowboy 2 you need to upgrade your Phoenix app to work with Cowboy 2.
-
-**Update dependencies in your mix.exs**
-
-Open up the mix.exs file and replace the dependencies with this:
-
-```elixir
-defp deps do
-  [
-    {:phoenix, git: "https://github.com/phoenixframework/phoenix", branch: "master", override: true},
-    {:plug, git: "https://github.com/elixir-plug/plug", branch: "master", override: true},
-    {:phoenix_pubsub, "~> 1.0"},
-    {:phoenix_html, "~> 2.10"},
-    {:phoenix_live_reload, "~> 1.0", only: :dev},
-    {:gettext, "~> 0.11"},
-    {:cowboy, "~> 2.1", override: true},
-    {:ex_dgraph, github: "ospaarmann/exdgraph", tag: "v0.1.0"}
-  ]
-end
-```
-
-Run `mix deps.get` to retrieve the new dependencies.
-
-**Create a self-signed certificate for https**
-
-We will need to do this as, although http2 does not specifically require it, browser do expect http2 connections to be secured over TLS.
-
-In your project folder run:
-
-```
-openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" -keyout priv/server.key -out priv/server.pem
-```
-
-Add the two generated files to .gitignore.
-
-Now we will need to adjust the Endpoint configuration to use a secure connection and use a Cowboy 2 handler
-
-Replace the configuration with the following.
-
-```elixir
-config :my_app, MyAppWeb.Endpoint,
-  debug_errors: true,
-  handler: Phoenix.Endpoint.Cowboy2Handler,
-  code_reloader: true,
-  check_origin: false,
-  watchers: [],
-  https: [port: 4000, keyfile: "priv/server.key", certfile: "priv/server.pem"]
-```
-
-This tells phoenix to listen on port 4000 with the just generated certificate. Furthermore, the handler tells Phoenix to use Cowboy2.
-
-If you now start the application with `mix phx.server` and go to https://localhost:4000 the browser will tell that the connection is not secure with for example NET::ERR_CERT_AUTHORITY_INVALID. This is because the certificate is self signed, and not by a certificate authority. You can open the certificate in for example Keychain on Mac OS X and tell your OS to trust the certificate.
-
-*[Source](https://maartenvanvliet.nl/2017/12/15/upgrading_phoenix_to_http2/)*
-
 ## Using SSL
+
 If you want to connect to Dgraph using SSL you have to set the `:ssl` config to `true` and provide a certificate:
 
 ```elixir

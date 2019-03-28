@@ -1,6 +1,6 @@
 defmodule ExDgraph do
   @moduledoc """
-  ExDgraph is a gRPC based client for the Dgraph database. It uses the DBConnection behaviour to support transactions and connection pooling via Poolboy. Works with Dgraph v1.0.11 (latest).
+  ExDgraph is a gRPC based client for the Dgraph database. It uses the DBConnection behaviour to support transactions and connection pooling via Poolboy. Works with Dgraph v1.0.13 (latest).
 
   ## Installation
 
@@ -9,7 +9,7 @@ defmodule ExDgraph do
   ```elixir
   def deps do
     [
-      {:ex_dgraph, "~> 0.2.0-beta.1"}
+      {:ex_dgraph, "~> 0.2.0-beta.2"}
     ]
   end
   ```
@@ -84,13 +84,13 @@ defmodule ExDgraph do
   end
   ```
 
-  **Important:** Please also note the instructions further down on how to run ExDgraph with Phoenix 1.3. It requires Cowboy 2 which means you have to change some things.
-
   ## Usage
 
-  Again, this is work in progress. I'll add more examples on how to use this on the go. So far you can connect to a server and run a simple query. I recommend installing and running Dgraph locally with Docker. You find information on how to do that [here](https://docs.dgraph.io/get-started/#from-docker-image). To use this simple example you first have to [import the example data](https://docs.dgraph.io/get-started/#step-3-run-queries). You can just open [http://localhost:8000](http://localhost:8000) in your browser when Dgraph is running to execute and visualize queries using Ratel.
+  I recommend installing and running Dgraph locally with Docker. You find information on how to do that [here](https://docs.dgraph.io/get-started/#from-docker-image). To use this simple example you first have to [import the example data](https://docs.dgraph.io/get-started/#step-3-run-queries). You can just open [http://localhost:8000](http://localhost:8000) in your browser when Dgraph is running to execute and visualize queries using Ratel.
 
-  At the moment simple queries, mutations and operations are supported via the DBConnection behaviour. Everything else is done directly via the Protobuf API. This will change. Check the tests for examples.
+  At the moment simple queries, mutations and operations are supported. And to make things easier ExDgraph returns an Elixir map and you can also just insert a map. This allows you to insert a complex dataset with vertices and edges in one call. To make things even better: If there is a `uid` present anywhere in the map the record isn't inserted but updated. This way you can update and add records in one go.
+
+  Also check the tests for more examples.
 
   ### Example for a query
 
@@ -268,6 +268,8 @@ defmodule ExDgraph do
 
   ### Example for a raw query
 
+  This is an example on how to use the Protobuf API with GRPC directly and how to extend the library.
+
   ```elixir
   # Connect to Server
   {:ok, channel} = GRPC.Stub.connect("#localhost:9080")
@@ -298,63 +300,8 @@ defmodule ExDgraph do
   json = Poison.decode!(msg.json)
   ```
 
-  ## Using with Phoenix 1.3
-  Since grpc-elixir needs Cowboy 2 you need to upgrade your Phoenix app to work with Cowboy 2.
-
-  ### Update dependencies in your mix.exs
-
-  Open up the mix.exs file and replace the dependencies with this:
-
-  ```elixir
-  defp deps do
-    [
-      {:phoenix, git: "https://github.com/phoenixframework/phoenix", branch: "master", override: true},
-      {:plug, git: "https://github.com/elixir-plug/plug", branch: "master", override: true},
-      {:phoenix_pubsub, "~> 1.0"},
-      {:phoenix_html, "~> 2.10"},
-      {:phoenix_live_reload, "~> 1.0", only: :dev},
-      {:gettext, "~> 0.11"},
-      {:cowboy, "~> 2.1", override: true},
-      {:ex_dgraph, "~> 0.1.0", github: "ospaarmann/exdgraph", branch: "master"}
-    ]
-  end
-  ```
-
-  Run `mix deps.get` to retrieve the new dependencies.
-
-  ### Create a self-signed certificate for https
-
-  We will need to do this as, although http2 does not specifically require it, browser do expect http2 connections to be secured over TLS.
-
-  In your project folder run:
-
-  ```
-  openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" -keyout priv/server.key -out priv/server.pem
-  ```
-
-  Add the two generated files to .gitignore.
-
-  Now we will need to adjust the Endpoint configuration to use a secure connection and use a Cowboy 2 handler
-
-  Replace the configuration with the following.
-
-  ```elixir
-  config :my_app, MyAppWeb.Endpoint,
-    debug_errors: true,
-    handler: Phoenix.Endpoint.Cowboy2Handler,
-    code_reloader: true,
-    check_origin: false,
-    watchers: [],
-    https: [port: 4000, keyfile: "priv/server.key", certfile: "priv/server.pem"]
-  ```
-
-  This tells phoenix to listen on port 4000 with the just generated certificate. Furthermore, the handler tells Phoenix to use Cowboy2.
-
-  If you now start the application with `mix phx.server` and go to https://localhost:4000 the browser will tell that the connection is not secure with for example NET::ERR_CERT_AUTHORITY_INVALID. This is because the certificate is self signed, and not by a certificate authority. You can open the certificate in for example Keychain on Mac OS X and tell your OS to trust the certificate.
-
-  *[Source](https://maartenvanvliet.nl/2017/12/15/upgrading_phoenix_to_http2/)*
-
   ## Using SSL
+
   If you want to connect to Dgraph using SSL you have to set the `:ssl` config to `true` and provide a certificate:
 
   ```elixir
@@ -420,9 +367,7 @@ defmodule ExDgraph do
     - `:password` - User password;
     - `:pool_size` - maximum pool size;
     - `:max_overflow` - maximum number of workers created if pool is empty
-    - `:timeout` - Connect timeout in milliseconds (default: `#{@timeout}`)
-       Poolboy will block the current process and wait for an available worker,
-       failing after a timeout, when the pool is full;
+    - `:timeout` - Connect timeout in milliseconds (default: `#{@timeout}`) for  DBConnection and the GRPC client deadline.
     - `:pool` - The connection pool. Defaults to `DbConnection.Poolboy`.
     - `:ssl` - If to use ssl for the connection (please see configuration example).
       If you set this option, you also have to set `cacertfile` to the correct path.
