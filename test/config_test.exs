@@ -1,5 +1,5 @@
 defmodule Config.Test do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias ExDgraph.Utils
 
   @basic_config [

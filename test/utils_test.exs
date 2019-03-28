@@ -1,5 +1,5 @@
 defmodule ExDgraph.Utils.Test do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest ExDgraph.Utils
 
   alias ExDgraph.Utils
@@ -33,7 +33,6 @@ defmodule ExDgraph.Utils.Test do
   test "as_rendered/1 geo (json)" do
     assert Utils.as_rendered([-111.925278, 33.501324]) == "[-111.925278,33.501324]"
   end
-
 
   test "as_literal/2 float" do
     assert Utils.as_literal(3.14, :float) == {:ok, "3.14"}
@@ -84,7 +83,6 @@ defmodule ExDgraph.Utils.Test do
   test "has_struct?/1 returns true for struct-having-modules" do
     assert Utils.has_struct?(URI) == true
   end
-
 end
 
 # Copyright (c) 2017 Jason Goldberger
