@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.2.0-beta.2] - 2019-03-28
+
+- Downgrade poison to `v3.1.0`.
+- Test against Dgraph `v1.0.13`
+- Set the GRPC deadline and `DBConnection` checkout timeout to use `:timeout` (contribution by @emhagman).
+- Update dependency `uuid` to `elixir_uuid` (contribution by @emhagman)
+- Some smaller tweaks (contribution by @optikfluffel).
+- Update the docs.
+
 ## [0.2.0-beta.1] - 2019-01-22
 
 - Handle `:gun_up` and `:gun_down` messages as debug level for now.
