@@ -8,9 +8,13 @@ ExDgraph is a gRPC based client for the [Dgraph](https://github.com/dgraph-io/dg
 
 If you want to learn more about Dgraph watch [this talk](https://www.youtube.com/watch?v=cHXbYLNa0qQ).
 
+## Questions / need help?
+
+If you have questions on how to use ExDgraph, or if you want to propose new features or talk about an issue please head over to the #elixir channel in [Dgraph Slack](https://slack.dgraph.io/).
+
 ## Contribute
 
-This is under development and contributions are very welcome. Please add a comment under [this issue](https://github.com/ospaarmann/exdgraph/issues/4) to discuss how to help. Please also read the roadmap at the bottom of this Readme to see where I stand and what the next steps are.
+This is under development and contributions are very welcome. If you want to contribute, please read [our guidelines](https://github.com/ospaarmann/exdgraph/blob/master/CONTRIBUTING.md). Please also read the roadmap at the bottom of this Readme to see where I stand and what the next steps are.
 
 A good start would be to improve test coverage. Run `mix coveralls` to see where work is needed.
 
