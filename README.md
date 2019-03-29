@@ -364,7 +364,6 @@ $ mix test
 - [X] Connect to Dgraph server via gRPC
 - [X] Implement DBConnection behaviour
 - [X] Improve test coverage
-- [ ] Support transactions
 - [X] Add documentation
 - [X] Improve error handling
 - [X] Implement TLS / authentication
@@ -372,7 +371,8 @@ $ mix test
 - [X] Query executer
 - [X] Mutations
 - [X] Operations
-- [ ] More intelligent query builder for nested queries
+- [ ] Support transactions
+- [ ] Per-call GRPC deadline
 
 ## Notes
 
