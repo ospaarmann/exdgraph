@@ -10,7 +10,7 @@ If you want to learn more about Dgraph watch [this talk](https://www.youtube.com
 
 ## Questions / need help?
 
-If you have questions on how to use ExDgraph, or if you want to propose new features or talk about an issue please head over to the #elixir channel in [Dgraph Slack](https://slack.dgraph.io/).
+If you have questions on how to use ExDgraph, or if you want to propose new features or talk about an issue please head over to the **#elixir** channel in [Dgraph Slack](https://slack.dgraph.io/).
 
 ## Contribute
 
