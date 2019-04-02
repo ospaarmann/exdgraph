@@ -45,7 +45,7 @@ defmodule ExDgraph.MixProject do
     [
       {:grpc, "~> 0.3.1"},
       {:gun, "1.3.0"},
-      {:protobuf, "~> 0.5"},
+      {:protobuf, "~> 0.6.1"},
       {:poison, "~> 3.1"},
       {:poolboy, "~> 1.5.2"},
       {:db_connection, "~> 1.1"},
