@@ -11,9 +11,9 @@ defmodule ExDgraph.Protocol do
   require Logger
 
   alias ExDgraph.Api
-  alias ExDgraph.{Exception, MutationStatement, OperationStatement, QueryStatement}
+  alias ExDgraph.{Error, Exception, MutationStatement, OperationStatement, QueryStatement}
 
-  @doc "Callback for DBConnection.connect/1"
+  @impl true
   def connect(_opts) do
     host = to_charlist(ExDgraph.config(:hostname))
     port = ExDgraph.config(:port)
@@ -27,43 +27,56 @@ defmodule ExDgraph.Protocol do
       {:ok, channel} ->
         {:ok, channel}
 
-      _ ->
-        Logger.error("ExDgraph: Connection Failed")
-        {:error, ExDgraph.Error}
-        # TODO: Proper error handling
+      {:error, reason} ->
+        {:error, %Error{action: :connect, reason: reason}}
     end
   end
 
-  @doc "Callback for DBConnection.checkout/1"
+  @impl true
   def checkout(state) do
     {:ok, state}
-    # TODO: Proper checkout. Only placeholder callback
   end
 
-  @doc "Callback for DBConnection.checkin/1"
+  @impl true
   def checkin(state) do
     {:ok, state}
-    # TODO: Proper checkout. Only placeholder callback
   end
 
-  @doc "Callback for DBConnection.disconnect/1"
-  def disconnect(_err, _state) do
-    :ok
+  @impl true
+  def disconnect(_error, state) do
+    case GRPC.Stub.disconnect(state) do
+      {:ok, _} -> :ok
+      {:error, _reason} -> :ok
+    end
   end
 
-  @doc "Callback for DBConnection.handle_begin/1"
+  @impl true
+  def ping(%{adapter_payload: %{conn_pid: conn_pid}} = channel) do
+    # check if the server is up and wait 5s seconds before disconnect
+    stream = :gun.head(conn_pid, "/")
+    response = :gun.await(conn_pid, stream, 5_000)
+
+    # return based on response
+    case response do
+      {:response, :fin, 200, _} -> {:ok, channel}
+      {:error, reason} -> {:disconnect, reason, channel}
+      _ -> :ok
+    end
+  end
+
+  @impl true
   def handle_begin(_opts, _state) do
   end
 
-  @doc "Callback for DBConnection.handle_rollback/1"
+  @impl true
   def handle_rollback(_opts, _state) do
   end
 
-  @doc "Callback for DBConnection.handle_commit/1"
+  @impl true
   def handle_commit(_opts, _state) do
   end
 
-  @doc "Callback for DBConnection.handle_execute/1"
+  @impl true
   def handle_execute(query, params, opts, channel) do
     # only try to reconnect if the error is about the broken connection
     with {:disconnect, _, _} <- execute(query, params, opts, channel) do
@@ -92,22 +105,7 @@ defmodule ExDgraph.Protocol do
     end
   end
 
-  def handle_info({:gun_up, _pid, _protocol}, state) do
-    Logger.debug(fn ->
-      [inspect(__MODULE__), ?\s, inspect(self()), " received gun_up from server"]
-    end)
-
-    {:ok, state}
-  end
-
-  def handle_info({:gun_down, _pid, _protocol, _level, _, _}, state) do
-    Logger.debug(fn ->
-      [inspect(__MODULE__), ?\s, inspect(self()), " received gun_down from server"]
-    end)
-
-    {:ok, state}
-  end
-
+  @impl true
   def handle_info(msg, state) do
     Logger.error(fn ->
       [inspect(__MODULE__), ?\s, inspect(self()), " received unexpected message: " | inspect(msg)]
@@ -119,6 +117,7 @@ defmodule ExDgraph.Protocol do
   defp execute(%QueryStatement{statement: statement}, _params, _, channel) do
     request = ExDgraph.Api.Request.new(query: statement)
     timeout = ExDgraph.config(:timeout)
+
     case ExDgraph.Api.Dgraph.Stub.query(channel, request, timeout: timeout) do
       {:ok, res} ->
         {:ok, res, channel}
@@ -161,6 +160,7 @@ defmodule ExDgraph.Protocol do
        ) do
     operation = Api.Operation.new(drop_all: drop_all, schema: schema, drop_attr: drop_attr)
     timeout = ExDgraph.config(:timeout)
+
     case ExDgraph.Api.Dgraph.Stub.alter(channel, operation, timeout: timeout) do
       {:ok, res} ->
         {:ok, res, channel}
@@ -175,6 +175,7 @@ defmodule ExDgraph.Protocol do
 
   defp do_mutate(channel, request) do
     timeout = ExDgraph.config(:timeout)
+
     case ExDgraph.Api.Dgraph.Stub.mutate(channel, request, timeout: timeout) do
       {:ok, res} ->
         {:ok, res, channel}

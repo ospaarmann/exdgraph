@@ -4,7 +4,7 @@ defmodule ExDgraph.MixProject do
   def project do
     [
       app: :ex_dgraph,
-      version: "0.2.0-beta.2",
+      version: "0.2.0-beta.3",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -32,7 +32,6 @@ defmodule ExDgraph.MixProject do
     [
       applications: [
         :logger,
-        :poolboy,
         :db_connection,
         :retry,
         :grpc
@@ -44,7 +43,6 @@ defmodule ExDgraph.MixProject do
   defp deps do
     [
       {:grpc, "~> 0.3.1"},
-      {:gun, "1.3.0"},
       {:protobuf, "~> 0.6.1"},
       {:poison, "~> 3.1"},
       {:poolboy, "~> 1.5.2"},
