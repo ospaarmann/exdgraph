@@ -1,6 +1,6 @@
 defmodule ExDgraph do
   @moduledoc """
-  ExDgraph is a gRPC based client for the Dgraph database. It uses the DBConnection behaviour to support transactions and connection pooling via Poolboy. Works with Dgraph v1.0.13 (latest).
+  ExDgraph is a gRPC based client for the Dgraph database. It uses the DBConnection behaviour to support transactions and connection pooling via Poolboy. Works with Dgraph v1.0.16 (latest).
 
   ## Installation
 
@@ -9,7 +9,7 @@ defmodule ExDgraph do
   ```elixir
   def deps do
     [
-      {:ex_dgraph, "~> 0.2.0-beta.2"}
+      {:ex_dgraph, "~> 0.2.0-beta.3"}
     ]
   end
   ```

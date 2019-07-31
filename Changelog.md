@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.2.0-beta.3] - 2019-07-31
+
+- Test against Dgraph `v1.0.16`
+- Remove dependency `gun`
+- Implement ping callback
+- Implement disconnect callback
+
 ## [0.2.0-beta.2] - 2019-03-28
 
 - Downgrade poison to `v3.1.0`.
