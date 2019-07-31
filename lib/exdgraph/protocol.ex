@@ -27,10 +27,8 @@ defmodule ExDgraph.Protocol do
       {:ok, channel} ->
         {:ok, channel}
 
-      _ ->
-        Logger.error("ExDgraph: Connection Failed")
-        {:error, ExDgraph.Error}
-        # TODO: Proper error handling
+      {:error, reason} ->
+        {:error, %Error{action: :connect, reason: reason}}
     end
   end
 
