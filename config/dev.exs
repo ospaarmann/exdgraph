@@ -4,7 +4,6 @@ config :ex_dgraph, ExDgraph,
   # default port considered to be: 9080
   hostname: 'localhost',
   pool_size: 5,
-  max_overflow: 1,
   # retry the request, in case of error - in the example below the retry will
   # linearly increase the delay from 150ms following a Fibonacci pattern,
   # cap the delay at 15 seconds (the value defined by the default `:timeout`

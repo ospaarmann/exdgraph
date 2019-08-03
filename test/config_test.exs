@@ -5,8 +5,7 @@ defmodule Config.Test do
   @basic_config [
     hostname: 'ole',
     port: 1234,
-    pool_size: 10,
-    max_overflow: 7
+    pool_size: 10
   ]
 
   @ssl_config [
@@ -20,7 +19,6 @@ defmodule Config.Test do
     assert config[:hostname] == 'ole'
     assert config[:port] == 1234
     assert config[:pool_size] == 10
-    assert config[:max_overflow] == 7
     assert config[:ssl] == false
     assert config[:tls_client_auth] == false
     assert config[:enforce_struct_schema] == false

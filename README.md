@@ -2,7 +2,7 @@
 
 **ExDgraph is functional but I would be careful using it in production. If you want to help, please drop me a message. Any help is greatly appreciated!**
 
-ExDgraph is a gRPC based client for the [Dgraph](https://github.com/dgraph-io/dgraph) database. It uses the [DBConnection](https://hexdocs.pm/db_connection/DBConnection.html) behaviour to support transactions and connection pooling via [Poolboy](https://github.com/devinus/poolboy). Works with Dgraph v1.0.16 (latest).
+ExDgraph is a gRPC based client for the [Dgraph](https://github.com/dgraph-io/dgraph) database. It uses the [DBConnection](https://hexdocs.pm/db_connection/DBConnection.html) behaviour to support transactions and connection pooling. Works with Dgraph v1.0.16 (latest).
 
 > Dgraph is an open source, horizontally scalable and distributed graph database, providing ACID transactions, consistent replication and linearizable reads. [...] Dgraph's goal is to provide Google production level scale and throughput, with low enough latency to be serving real time user queries, over terabytes of structured data. ([Source](https://github.com/dgraph-io/dgraph))
 
@@ -62,8 +62,7 @@ Add the configuration to your respective configuration file:
 config :ex_dgraph, ExDgraph,
   hostname: 'localhost',
   port: 9080,
-  pool_size: 5,
-  max_overflow: 1
+  pool_size: 5
 ```
 
 And finally don't forget to add ExDgraph to the supervisor tree of your app:
@@ -311,7 +310,6 @@ config :ex_dgraph, ExDgraph,
   # default port considered to be: 9080
   hostname: 'localhost',
   pool_size: 5,
-  max_overflow: 1,
   ssl: true,
   cacertfile: '/path/to/MyRootCA.pem'
 ```
@@ -332,7 +330,6 @@ config :ex_dgraph, ExDgraph,
   # default port considered to be: 9080
   hostname: 'localhost',
   pool_size: 5,
-  max_overflow: 1,
   ssl: true,
   cacertfile: '/path/to/MyRootCA.pem',
   certfile: '/path/to/MyClient1.pem',

@@ -1,6 +1,6 @@
 defmodule ExDgraph do
   @moduledoc """
-  ExDgraph is a gRPC based client for the Dgraph database. It uses the DBConnection behaviour to support transactions and connection pooling via Poolboy. Works with Dgraph v1.0.16 (latest).
+  ExDgraph is a gRPC based client for the Dgraph database. It uses DBConnection to support transactions and connection pooling. Works with Dgraph v1.0.16 (latest).
 
   ## Installation
 
@@ -41,7 +41,6 @@ defmodule ExDgraph do
     hostname: 'localhost',
     port: 9080,
     pool_size: 5,
-    max_overflow: 1,
     keepalive: :infinity
   ```
 
@@ -52,9 +51,7 @@ defmodule ExDgraph do
     hostname: 'localhost',
     port: 9080,
     pool_size: 5,
-    max_overflow: 1
     timeout: 15_000, # This value is used for the DBConnection timeout and the GRPC client deadline
-    pool: DBConnection.Poolboy,
     ssl: false,
     tls_client_auth: false,
     certfile: nil,
@@ -309,7 +306,6 @@ defmodule ExDgraph do
     # default port considered to be: 9080
     hostname: 'localhost',
     pool_size: 5,
-    max_overflow: 1,
     ssl: true,
     cacertfile: '/path/to/MyRootCA.pem'
   ```
@@ -330,7 +326,6 @@ defmodule ExDgraph do
     # default port considered to be: 9080
     hostname: 'localhost',
     pool_size: 5,
-    max_overflow: 1,
     ssl: true,
     cacertfile: '/path/to/MyRootCA.pem',
     certfile: '/path/to/MyClient1.pem',
@@ -366,9 +361,7 @@ defmodule ExDgraph do
     - `:username` - Username;
     - `:password` - User password;
     - `:pool_size` - maximum pool size;
-    - `:max_overflow` - maximum number of workers created if pool is empty
     - `:timeout` - Connect timeout in milliseconds (default: `#{@timeout}`) for  DBConnection and the GRPC client deadline.
-    - `:pool` - The connection pool. Defaults to `DbConnection.Poolboy`.
     - `:ssl` - If to use ssl for the connection (please see configuration example).
       If you set this option, you also have to set `cacertfile` to the correct path.
     - `:tls_client_auth` - If to use TLS client authentication for the connection
@@ -386,8 +379,7 @@ defmodule ExDgraph do
       config :ex_dgraph, ExDgraph,
         hostname: 'localhost',
         port: 9080,
-        pool_size: 5,
-        max_overflow: 1
+        pool_size: 5
 
   ## With SSL
 
@@ -395,7 +387,6 @@ defmodule ExDgraph do
         # default port considered to be: 9080
         hostname: 'localhost',
         pool_size: 5,
-        max_overflow: 1,
         ssl: true,
         cacertfile: '/path/to/MyRootCA.pem'
 
@@ -405,7 +396,6 @@ defmodule ExDgraph do
         # default port considered to be: 9080
         hostname: 'localhost',
         pool_size: 5,
-        max_overflow: 1,
         ssl: true,
         cacertfile: '/path/to/MyRootCA.pem',
         certfile: '/path/to/MyClient1.pem',
@@ -423,11 +413,13 @@ defmodule ExDgraph do
 
   @doc false
   def init(opts) do
-    cnf = Utils.default_config(opts)
+    cnf =
+      Utils.default_config(opts)
+      |> Keyword.put(:name, :ex_dgraph_pool)
 
     children = [
       {ExDgraph.ConfigAgent, cnf},
-      DBConnection.child_spec(ExDgraph.Protocol, pool_config(cnf))
+      DBConnection.child_spec(ExDgraph.Protocol, cnf)
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
@@ -755,16 +747,4 @@ defmodule ExDgraph do
   """
   @spec operation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
   defdelegate operation!(conn, statement), to: Operation
-
-  ## Helpers
-  ######################
-
-  defp pool_config(cnf) do
-    [
-      name: {:local, pool_name()},
-      pool: Keyword.get(cnf, :pool),
-      pool_size: Keyword.get(cnf, :pool_size),
-      pool_overflow: Keyword.get(cnf, :max_overflow)
-    ]
-  end
 end

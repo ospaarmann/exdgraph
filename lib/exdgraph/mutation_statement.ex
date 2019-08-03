@@ -4,11 +4,13 @@ defmodule ExDgraph.MutationStatement do
 end
 
 defimpl DBConnection.Query, for: ExDgraph.MutationStatement do
+  alias ExDgraph.Transform
+
   def describe(query, _), do: query
 
   def parse(query, _), do: query
 
   def encode(_query, data, _), do: data
 
-  def decode(_, result, _), do: result
+  def decode(_query, result, _opts), do: Transform.transform_mutation(result)
 end

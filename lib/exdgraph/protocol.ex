@@ -13,6 +13,15 @@ defmodule ExDgraph.Protocol do
   alias ExDgraph.Api
   alias ExDgraph.{Error, Exception, MutationStatement, OperationStatement, QueryStatement}
 
+  defstruct [
+    :adapter,
+    :channel,
+    :connected,
+    :txn_context,
+    :transaction_status,
+    txn_aborted?: false
+  ]
+
   @impl true
   def connect(_opts) do
     host = to_charlist(ExDgraph.config(:hostname))
@@ -25,7 +34,8 @@ defmodule ExDgraph.Protocol do
 
     case GRPC.Stub.connect("#{host}:#{port}", opts) do
       {:ok, channel} ->
-        {:ok, channel}
+        state = %__MODULE__{channel: channel}
+        {:ok, state}
 
       {:error, reason} ->
         {:error, %Error{action: :connect, reason: reason}}
@@ -43,25 +53,30 @@ defmodule ExDgraph.Protocol do
   end
 
   @impl true
-  def disconnect(_error, state) do
-    case GRPC.Stub.disconnect(state) do
+  def disconnect(_error, %{channel: channel} = _state) do
+    case GRPC.Stub.disconnect(channel) do
       {:ok, _} -> :ok
       {:error, _reason} -> :ok
     end
   end
 
   @impl true
-  def ping(%{adapter_payload: %{conn_pid: conn_pid}} = channel) do
+  def ping(%{channel: channel} = state) do
+    %{adapter_payload: %{conn_pid: conn_pid}} = channel
     # check if the server is up and wait 5s seconds before disconnect
     stream = :gun.head(conn_pid, "/")
     response = :gun.await(conn_pid, stream, 5_000)
 
     # return based on response
     case response do
-      {:response, :fin, 200, _} -> {:ok, channel}
-      {:error, reason} -> {:disconnect, reason, channel}
+      {:response, :fin, 200, _} -> {:ok, state}
+      {:error, reason} -> {:disconnect, reason, state}
       _ -> :ok
     end
+  end
+
+  def handle_status(_, %{transaction_status: status} = state) do
+    {:idle, state}
   end
 
   @impl true
@@ -77,9 +92,9 @@ defmodule ExDgraph.Protocol do
   end
 
   @impl true
-  def handle_execute(query, params, opts, channel) do
+  def handle_execute(query, params, opts, %{channel: channel} = state) do
     # only try to reconnect if the error is about the broken connection
-    with {:disconnect, _, _} <- execute(query, params, opts, channel) do
+    with {:disconnect, _, _} <- execute(query, params, opts, state) do
       [
         delay: delay,
         factor: factor,
@@ -95,7 +110,7 @@ defmodule ExDgraph.Protocol do
       retry with: delay_stream do
         with {:ok, channel} <- connect([]),
              {:ok, channel} <- checkout(channel) do
-          execute(query, params, opts, channel)
+          execute(query, params, opts, state)
         end
       after
         result -> result
@@ -105,7 +120,7 @@ defmodule ExDgraph.Protocol do
     end
   end
 
-  @impl true
+  @doc false
   def handle_info(msg, state) do
     Logger.error(fn ->
       [inspect(__MODULE__), ?\s, inspect(self()), " received unexpected message: " | inspect(msg)]
@@ -114,78 +129,83 @@ defmodule ExDgraph.Protocol do
     {:ok, state}
   end
 
-  defp execute(%QueryStatement{statement: statement}, _params, _, channel) do
+  defp execute(
+         %QueryStatement{statement: statement} = query,
+         _params,
+         _,
+         %{channel: channel} = state
+       ) do
     request = ExDgraph.Api.Request.new(query: statement)
     timeout = ExDgraph.config(:timeout)
 
     case ExDgraph.Api.Dgraph.Stub.query(channel, request, timeout: timeout) do
       {:ok, res} ->
-        {:ok, res, channel}
+        {:ok, query, res, state}
 
       {:error, f} ->
         raise Exception, code: f.status, message: f.message
     end
   rescue
     e ->
-      {:error, e, channel}
+      {:error, e, state}
   end
 
-  defp execute(%MutationStatement{statement: statement, set_json: ""}, _params, _, channel) do
-    request = ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
-    do_mutate(channel, request)
+  defp execute(%MutationStatement{statement: statement, set_json: ""} = query, _params, _, state) do
+    dgraph_query = ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
+    do_mutate(state, dgraph_query, query)
   end
 
-  defp execute(%MutationStatement{statement: "", set_json: set_json}, _params, _, channel) do
-    request = ExDgraph.Api.Mutation.new(set_json: set_json, commit_now: true)
-    do_mutate(channel, request)
+  defp execute(%MutationStatement{statement: "", set_json: set_json} = query, _params, _, state) do
+    dgraph_query = ExDgraph.Api.Mutation.new(set_json: set_json, commit_now: true)
+    do_mutate(state, dgraph_query, query)
   end
 
   defp execute(
          %MutationStatement{statement: _statement, set_json: _set_json},
          _params,
          _,
-         channel
+         %{channel: channel} = state
        ) do
     raise Exception, code: 2, message: "Both set_json and statement defined"
   rescue
     e ->
-      {:error, e, channel}
+      {:error, e, state}
   end
 
   defp execute(
-         %OperationStatement{drop_all: drop_all, schema: schema, drop_attr: drop_attr},
+         %OperationStatement{drop_all: drop_all, schema: schema, drop_attr: drop_attr} = query,
          _params,
          _,
-         channel
+         %{channel: channel} = state
        ) do
     operation = Api.Operation.new(drop_all: drop_all, schema: schema, drop_attr: drop_attr)
     timeout = ExDgraph.config(:timeout)
 
     case ExDgraph.Api.Dgraph.Stub.alter(channel, operation, timeout: timeout) do
       {:ok, res} ->
-        {:ok, res, channel}
+        {:ok, query, res, state}
 
       {:error, f} ->
         raise Exception, code: f.status, message: f.message
     end
   rescue
     e ->
-      {:error, e, channel}
+      {:error, e, state}
   end
 
-  defp do_mutate(channel, request) do
+  defp do_mutate(%{channel: channel} = state, dgraph_query, query) do
     timeout = ExDgraph.config(:timeout)
 
-    case ExDgraph.Api.Dgraph.Stub.mutate(channel, request, timeout: timeout) do
+    case ExDgraph.Api.Dgraph.Stub.mutate(channel, dgraph_query, timeout: timeout) do
       {:ok, res} ->
-        {:ok, res, channel}
+        {:ok, query, res, state}
 
       {:error, f} ->
         raise Exception, code: f.status, message: f.message
     end
   rescue
     e ->
-      {:error, e, channel}
+      {:error, e, state}
   end
 
   defp configure_ssl(ssl_opts \\ []) do

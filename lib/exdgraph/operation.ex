@@ -10,8 +10,8 @@ defmodule ExDgraph.Operation do
       {:error, f} ->
         {:error, code: f.code, message: f.message}
 
-      r ->
-        {:ok, r}
+      {:ok, %OperationStatement{}, result} ->
+        {:ok, result}
     end
   end
 
@@ -41,8 +41,11 @@ defmodule ExDgraph.Operation do
       }
 
       case DBConnection.execute(conn, operation, %{}) do
-        {:ok, resp} -> resp
-        other -> other
+        {:ok, resp} ->
+          resp
+
+        other ->
+          other
       end
     end
 

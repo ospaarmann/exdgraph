@@ -7,16 +7,19 @@ defmodule ExDgraph.Mutation do
   @doc false
   def mutation(conn, statement) do
     case mutation_commit(conn, statement) do
-      {:error, f} -> {:error, code: f.code, message: f.message}
-      r -> {:ok, r}
+      {:ok, %MutationStatement{}, result} ->
+        {:ok, result}
+
+      {:error, f} ->
+        {:error, code: f.code, message: f.message}
     end
   end
 
   @doc false
   def mutation!(conn, statement) do
     case mutation(conn, statement) do
-      {:ok, r} ->
-        r
+      {:ok, %MutationStatement{}, result} ->
+        {:ok, result}
 
       {:error, code: code, message: message} ->
         raise Exception, code: code, message: message
@@ -29,8 +32,11 @@ defmodule ExDgraph.Mutation do
     json = Poison.encode!(map_with_tmp_uids)
 
     case set_map_commit(conn, json, map_with_tmp_uids) do
-      {:error, f} -> {:error, code: f.code, message: f.message}
-      r -> {:ok, r}
+      {:ok, r} ->
+        {:ok, r}
+
+      {:error, f} ->
+        {:error, code: f.code, message: f.message}
     end
   end
 
@@ -51,8 +57,11 @@ defmodule ExDgraph.Mutation do
     json = Poison.encode!(uids_and_schema_map)
 
     case set_struct_commit(conn, json, uids_and_schema_map) do
-      {:error, f} -> {:error, code: f.code, message: f.message}
-      r -> {:ok, r}
+      {:ok, r} ->
+        {:ok, r}
+
+      {:error, f} ->
+        {:error, code: f.code, message: f.message}
     end
   end
 
@@ -77,8 +86,7 @@ defmodule ExDgraph.Mutation do
       end
     end
 
-    # Response.transform(DBConnection.run(conn, exec, run_opts()))
-    DBConnection.run(conn, exec, run_opts())
+    DBConnection.run(conn, exec)
   end
 
   defp set_map_commit(conn, json, map_with_tmp_uids) do
@@ -86,19 +94,17 @@ defmodule ExDgraph.Mutation do
       q = %MutationStatement{set_json: json}
 
       case DBConnection.execute(conn, q, %{}) do
-        {:ok, resp} ->
-          parsed_response = Transform.transform_mutation(resp)
+        {:ok, %MutationStatement{}, result} ->
           # Now exchange the tmp ids for the ones returned from the db
-          result_with_uids = replace_tmp_uids(map_with_tmp_uids, parsed_response.uids)
-          Map.put(parsed_response, :result, result_with_uids)
+          result_with_uids = replace_tmp_uids(map_with_tmp_uids, result.uids)
+          {:ok, Map.put(result, :result, result_with_uids)}
 
         other ->
           other
       end
     end
 
-    # Response.transform(DBConnection.run(conn, exec, run_opts()))
-    DBConnection.run(conn, exec, run_opts())
+    DBConnection.run(conn, exec)
   end
 
   defp set_struct_commit(conn, json, struct_with_tmp_uids) do
@@ -106,18 +112,17 @@ defmodule ExDgraph.Mutation do
       q = %MutationStatement{set_json: json}
 
       case DBConnection.execute(conn, q, %{}) do
-        {:ok, resp} ->
-          parsed_response = Transform.transform_mutation(resp)
+        {:ok, %MutationStatement{}, result} ->
           # Now exchange the tmp ids for the ones returned from the db
-          result_with_uids = replace_tmp_struct_uids(struct_with_tmp_uids, parsed_response.uids)
-          Map.put(parsed_response, :result, result_with_uids)
+          result_with_uids = replace_tmp_struct_uids(struct_with_tmp_uids, result.uids)
+          {:ok, Map.put(result, :result, result_with_uids)}
 
         other ->
           other
       end
     end
 
-    DBConnection.run(conn, exec, run_opts())
+    DBConnection.run(conn, exec)
   end
 
   defp insert_tmp_uids(map) when is_list(map), do: Enum.map(map, &insert_tmp_uids/1)
@@ -209,8 +214,4 @@ defmodule ExDgraph.Mutation do
 
   defp set_schema(_schema_name, {key, map_value}, result, _is_enforced_schema),
     do: Map.merge(result, %{key => set_tmp_ids_and_schema(map_value)})
-
-  defp run_opts do
-    [pool: ExDgraph.config(:pool)]
-  end
 end
