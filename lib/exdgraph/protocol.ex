@@ -1,8 +1,6 @@
 defmodule ExDgraph.Protocol do
   @moduledoc """
   Implements callbacks required by DBConnection.
-
-  Each callback receives an open connection as a state.
   """
 
   use DBConnection
@@ -10,8 +8,15 @@ defmodule ExDgraph.Protocol do
 
   require Logger
 
-  alias ExDgraph.Api
-  alias ExDgraph.{Error, Exception, MutationStatement, OperationStatement, QueryStatement}
+  alias ExDgraph.{
+    Adapter,
+    Api,
+    Error,
+    Exception,
+    MutationStatement,
+    OperationStatement,
+    QueryStatement
+  }
 
   defstruct [
     :adapter,
@@ -32,7 +37,7 @@ defmodule ExDgraph.Protocol do
       |> set_ssl_opts()
       |> Keyword.put(:adapter_opts, %{http2_opts: %{keepalive: ExDgraph.config(:keepalive)}})
 
-    case GRPC.Stub.connect("#{host}:#{port}", opts) do
+    case Adapter.connect(host, port, opts) do
       {:ok, channel} ->
         state = %__MODULE__{channel: channel}
         {:ok, state}
