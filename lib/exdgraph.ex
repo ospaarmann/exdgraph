@@ -294,7 +294,7 @@ defmodule ExDgraph do
   {:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
 
   # Parse result
-  json = Poison.decode!(msg.json)
+  json = Jason.decode!(msg.json)
   ```
 
   ## Using SSL

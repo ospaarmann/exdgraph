@@ -29,7 +29,7 @@ defmodule ExDgraph.Mutation do
   @doc false
   def set_map(conn, map) do
     map_with_tmp_uids = insert_tmp_uids(map)
-    json = Poison.encode!(map_with_tmp_uids)
+    json = Jason.encode!(map_with_tmp_uids)
 
     case set_map_commit(conn, json, map_with_tmp_uids) do
       {:ok, r} ->
@@ -54,7 +54,7 @@ defmodule ExDgraph.Mutation do
   @doc false
   def set_struct(conn, struct) do
     uids_and_schema_map = set_tmp_ids_and_schema(struct)
-    json = Poison.encode!(uids_and_schema_map)
+    json = Jason.encode!(uids_and_schema_map)
 
     case set_struct_commit(conn, json, uids_and_schema_map) do
       {:ok, r} ->

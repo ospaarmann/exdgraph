@@ -5,7 +5,7 @@ defmodule ExDgraph.Utils do
 
   def as_rendered(value) do
     case value do
-      x when is_list(x) -> x |> Poison.encode!()
+      x when is_list(x) -> x |> Jason.encode!()
       %Date{} = x -> x |> Date.to_iso8601() |> Kernel.<>("T00:00:00.0+00:00")
       %DateTime{} = x -> x |> DateTime.to_iso8601() |> String.replace("Z", "+00:00")
       x -> x |> to_string

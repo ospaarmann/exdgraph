@@ -42,17 +42,17 @@ defmodule ExDgraph.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:grpc, "~> 0.3.1"},
-      {:protobuf, "~> 0.6.1"},
-      {:poison, "~> 3.1"},
       {:db_connection, "~> 2.1"},
-      {:retry, "~> 0.11.2"},
-      {:morphix, "~> 0.6.0"},
-      {:ex_doc, "~> 0.19.0", only: :dev, runtime: false},
       {:elixir_uuid, "~> 1.2"},
-      {:mix_test_watch, "~> 0.5", only: :dev, runtime: false},
+      {:grpc, "~> 0.3.1"},
+      {:jason, "~> 1.1"},
+      {:morphix, "~> 0.6.0"},
+      {:protobuf, "~> 0.6.1"},
+      {:retry, "~> 0.11.2"},
       {:excoveralls, "~> 0.10", only: :test},
-      {:credo, "~> 1.0", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.19.0", only: :dev, runtime: false},
+      {:mix_test_watch, "~> 0.5", only: :dev, runtime: false}
     ]
   end
 

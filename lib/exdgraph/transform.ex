@@ -8,7 +8,7 @@ defmodule ExDgraph.Transform do
   keys into atom keys.
   """
   def transform_query(%ExDgraph.Api.Response{json: json, schema: schema, txn: txn}) do
-    decoded = Poison.decode!(json)
+    decoded = Jason.decode!(json)
 
     transformed =
       case Morphix.atomorphiform(decoded) do
