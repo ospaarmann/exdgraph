@@ -100,6 +100,15 @@ defmodule ExDgraph.Utils do
     |> Keyword.put_new(:cacertfile, nil)
     |> Keyword.put_new(:enforce_struct_schema, false)
     |> Keyword.put_new(:keepalive, :infinity)
+    # DBConnection config options
+    |> Keyword.put_new(:name, 1_000)
+    |> Keyword.put_new(:backoff_min, 1_000)
+    |> Keyword.put_new(:backoff_max, 30_000)
+    |> Keyword.put_new(:backoff_type, :rand_exp)
+    |> Keyword.put_new(:pool_size, 5)
+    |> Keyword.put_new(:idle_interval, 5_000)
+    |> Keyword.put_new(:max_restarts, 3)
+    |> Keyword.put_new(:max_seconds, 5)
     |> Enum.reject(fn {_k, v} -> is_nil(v) end)
   end
 end
