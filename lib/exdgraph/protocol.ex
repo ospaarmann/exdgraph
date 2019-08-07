@@ -9,7 +9,6 @@ defmodule ExDgraph.Protocol do
   require Logger
 
   alias ExDgraph.{
-    Adapter,
     Api,
     Error,
     Exception,
@@ -37,7 +36,7 @@ defmodule ExDgraph.Protocol do
       |> set_ssl_opts()
       |> Keyword.put(:adapter_opts, %{http2_opts: %{keepalive: ExDgraph.config(:keepalive)}})
 
-    case Adapter.connect(host, port, opts) do
+    case GRPC.Stub.connect("#{host}:#{port}", opts) do
       {:ok, channel} ->
         state = %__MODULE__{channel: channel}
         {:ok, state}
