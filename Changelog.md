@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+- Remove retry since DBConnection 2 implements a retry mechanism.
+
 ## [0.2.0-beta.3] - 2019-07-31
 
 - Test against Dgraph `v1.0.16`

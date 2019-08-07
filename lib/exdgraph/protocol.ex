@@ -4,7 +4,6 @@ defmodule ExDgraph.Protocol do
   """
 
   use DBConnection
-  use Retry
 
   require Logger
 
@@ -18,7 +17,6 @@ defmodule ExDgraph.Protocol do
   }
 
   defstruct [
-    :adapter,
     :channel,
     :connected,
     :txn_context,
@@ -95,35 +93,6 @@ defmodule ExDgraph.Protocol do
   def handle_commit(_opts, _state) do
   end
 
-  @impl true
-  def handle_execute(query, params, opts, %{channel: channel} = state) do
-    # only try to reconnect if the error is about the broken connection
-    with {:disconnect, _, _} <- execute(query, params, opts, state) do
-      [
-        delay: delay,
-        factor: factor,
-        tries: tries
-      ] = ExDgraph.config(:retry_linear_backoff)
-
-      delay_stream =
-        delay
-        |> linear_backoff(factor)
-        |> cap(ExDgraph.config(:timeout))
-        |> Stream.take(tries)
-
-      retry with: delay_stream do
-        with {:ok, channel} <- connect([]),
-             {:ok, channel} <- checkout(channel) do
-          execute(query, params, opts, state)
-        end
-      after
-        result -> result
-      else
-        error -> error
-      end
-    end
-  end
-
   @doc false
   def handle_info(msg, state) do
     Logger.error(fn ->
@@ -133,12 +102,13 @@ defmodule ExDgraph.Protocol do
     {:ok, state}
   end
 
-  defp execute(
-         %QueryStatement{statement: statement} = query,
-         _params,
-         _,
-         %{channel: channel} = state
-       ) do
+  @impl true
+  def handle_execute(
+        %QueryStatement{statement: statement} = query,
+        _params,
+        _,
+        %{channel: channel} = state
+      ) do
     request = ExDgraph.Api.Request.new(query: statement)
     timeout = ExDgraph.config(:timeout)
 
@@ -154,34 +124,48 @@ defmodule ExDgraph.Protocol do
       {:error, e, state}
   end
 
-  defp execute(%MutationStatement{statement: statement, set_json: ""} = query, _params, _, state) do
+  @impl true
+  def handle_execute(
+        %MutationStatement{statement: statement, set_json: ""} = query,
+        _params,
+        _,
+        state
+      ) do
     dgraph_query = ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
     do_mutate(state, dgraph_query, query)
   end
 
-  defp execute(%MutationStatement{statement: "", set_json: set_json} = query, _params, _, state) do
+  @impl true
+  def handle_execute(
+        %MutationStatement{statement: "", set_json: set_json} = query,
+        _params,
+        _,
+        state
+      ) do
     dgraph_query = ExDgraph.Api.Mutation.new(set_json: set_json, commit_now: true)
     do_mutate(state, dgraph_query, query)
   end
 
-  defp execute(
-         %MutationStatement{statement: _statement, set_json: _set_json},
-         _params,
-         _,
-         %{channel: channel} = state
-       ) do
+  @impl true
+  def handle_execute(
+        %MutationStatement{statement: _statement, set_json: _set_json},
+        _params,
+        _,
+        %{channel: channel} = state
+      ) do
     raise Exception, code: 2, message: "Both set_json and statement defined"
   rescue
     e ->
       {:error, e, state}
   end
 
-  defp execute(
-         %OperationStatement{drop_all: drop_all, schema: schema, drop_attr: drop_attr} = query,
-         _params,
-         _,
-         %{channel: channel} = state
-       ) do
+  @impl true
+  def handle_execute(
+        %OperationStatement{drop_all: drop_all, schema: schema, drop_attr: drop_attr} = query,
+        _params,
+        _,
+        %{channel: channel} = state
+      ) do
     operation = Api.Operation.new(drop_all: drop_all, schema: schema, drop_attr: drop_attr)
     timeout = ExDgraph.config(:timeout)
 

@@ -343,7 +343,7 @@ defmodule ExDgraph do
 
   use Supervisor
 
-  @pool_name :ex_dgraph_pool
+  @pool_name :ex_dgraph
   @timeout 15_000
 
   alias ExDgraph.Api.{Mutation, Operation}
@@ -413,9 +413,7 @@ defmodule ExDgraph do
 
   @doc false
   def init(opts) do
-    cnf =
-      Utils.default_config(opts)
-      |> Keyword.put(:name, :ex_dgraph_pool)
+    cnf = Utils.default_config(opts)
 
     children = [
       {ExDgraph.ConfigAgent, cnf},
