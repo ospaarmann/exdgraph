@@ -80,4 +80,4 @@ if Process.whereis(ExDgraph.pool_name()) == nil do
   {:ok, _pid} = ExDgraph.start_link(Application.get_env(:ex_dgraph, ExDgraph))
 end
 
-Process.flag(:trap_exit, true)
+ExUnit.configure(exclude: [tls_tests: true])
