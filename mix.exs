@@ -30,11 +30,7 @@ defmodule ExDgraph.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      applications: [
-        :logger,
-        :db_connection,
-        :grpc
-      ]
+      applications: [:logger, :db_connection, :grpc]
     ]
   end
 
@@ -49,7 +45,7 @@ defmodule ExDgraph.MixProject do
       {:protobuf, "~> 0.6.1"},
       {:excoveralls, "~> 0.10", only: :test},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.19.0", only: :dev, runtime: false},
+      {:ex_doc, "> 0.0.0", only: :dev, runtime: false},
       {:mix_test_watch, "~> 0.5", only: :dev, runtime: false}
     ]
   end
