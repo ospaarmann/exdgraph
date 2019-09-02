@@ -347,7 +347,6 @@ defmodule ExDgraph do
   @timeout 15_000
 
   alias ExDgraph.Api.{Mutation, Operation}
-  alias ExDgraph.{ConfigAgent, Operation, Mutation, Query, Utils}
 
   @type conn :: DBConnection.conn()
   # @type transaction :: DBConnection.t()
@@ -427,21 +426,6 @@ defmodule ExDgraph do
   Returns a pool name which can be used to acquire a connection.
   """
   def conn, do: pool_name()
-
-  @doc """
-  Returns an environment specific ExDgraph configuration.
-  """
-  def config, do: ConfigAgent.get_config()
-
-  @doc false
-  def config(key), do: Keyword.get(config(), key)
-
-  @doc false
-  def config(key, default) do
-    Keyword.get(config(), key, default)
-  rescue
-    _ -> default
-  end
 
   @doc false
   def pool_name, do: @pool_name
