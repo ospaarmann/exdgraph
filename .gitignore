@@ -30,3 +30,6 @@ exdgraph-*.tar
 
 # Data directory when running Dgraph from docker-compose for test purposes
 /dgraph_data
+
+# TLS folder with certificates for testing
+/tls/*
