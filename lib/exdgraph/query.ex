@@ -2,7 +2,9 @@ defmodule ExDgraph.Query do
   @moduledoc """
   Provides the functions for the callbacks from the DBConnection behaviour.
   """
-  alias ExDgraph.{Exception, QueryStatement, Transform}
+  alias ExDgraph.{Exception, Query, Transform}
+
+  defstruct statement: ""
 
   @doc false
   def query(conn, statement) do
@@ -10,7 +12,7 @@ defmodule ExDgraph.Query do
       {:error, f} ->
         {:error, code: Map.get(f, :code, Map.get(f, :status)), message: f.message}
 
-      {:ok, %QueryStatement{}, result} ->
+      {:ok, %Query{}, result} ->
         {:ok, result}
     end
   end
@@ -27,19 +29,27 @@ defmodule ExDgraph.Query do
   end
 
   defp query_commit(conn, statement) do
-    exec = fn conn ->
-      q = %QueryStatement{statement: statement}
+    q = %Query{statement: statement}
 
-      case DBConnection.execute(conn, q, %{}) do
-        {:ok, resp} -> Transform.transform_query(resp)
-        other -> other
-      end
+    case DBConnection.execute(conn, q, %{}) do
+      {:ok, resp} -> Transform.transform_query(resp)
+      other -> other
     end
-
-    DBConnection.run(conn, exec, run_opts())
   end
 
   defp run_opts do
     [pool: ExDgraph.config(:pool), timeout: ExDgraph.config(:timeout)]
   end
+end
+
+defimpl DBConnection.Query, for: ExDgraph.Query do
+  alias ExDgraph.Transform
+
+  def describe(query, _), do: query
+
+  def parse(query, _), do: query
+
+  def encode(_query, data, _), do: data
+
+  def decode(_query, result, _opts), do: Transform.transform_query(result)
 end
