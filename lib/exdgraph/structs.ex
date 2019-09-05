@@ -4,7 +4,11 @@ defmodule ExDgraph.Error do
   """
   defexception [:reason, :action, :code]
 
-  @type t :: %ExDgraph.Error{}
+  @type t :: %ExDgraph.Error{
+          reason: String.t(),
+          action: atom(),
+          code: non_neg_integer
+        }
 
   @impl true
   def message(%{action: action, reason: reason}) do
@@ -16,6 +20,12 @@ defmodule ExDgraph.Result do
   @moduledoc """
   Results from a query are wrapped in ExDgraph.Result
   """
+
+  @type t :: %__MODULE__{
+          data: %{optional(any) => any},
+          schema: [any()],
+          txn: %ExDgraph.Api.TxnContext{}
+        }
 
   defstruct [:data, :schema, :txn]
 end
