@@ -2,7 +2,6 @@ defmodule ExDgraph.Query do
   @moduledoc """
   Provides the functions for the callbacks from the DBConnection behaviour.
   """
-  alias ExDgraph.{Exception, Error, Query, Transform}
 
   defstruct [:statement, :parameters, :txn_context]
 end
@@ -29,7 +28,11 @@ defimpl DBConnection.Query, for: ExDgraph.Query do
 
   def encode(_query, data, _), do: data
 
-  def decode(_query, %ExDgraph.Api.Response{json: json, schema: schema, txn: txn} = result, _opts) do
+  def decode(
+        _query,
+        %ExDgraph.Api.Response{json: json, schema: schema, txn: txn} = _result,
+        _opts
+      ) do
     data =
       json
       |> Jason.decode!()
