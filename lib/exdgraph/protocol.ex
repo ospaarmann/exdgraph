@@ -127,12 +127,9 @@ defmodule ExDgraph.Protocol do
       {:ok, res} ->
         {:ok, query, res, state}
 
-      {:error, f} ->
-        raise Exception, code: f.status, message: f.message
+      {:error, error} ->
+        {:error, %Error{action: :query, code: error.status, reason: error.message}, state}
     end
-  rescue
-    e ->
-      {:error, e, state}
   end
 
   @impl true
