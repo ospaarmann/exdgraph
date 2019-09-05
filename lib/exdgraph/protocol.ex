@@ -16,7 +16,10 @@ defmodule ExDgraph.Protocol do
     QueryStatement
   }
 
+  alias GRPC.Stub
+
   defstruct [
+    :opts,
     :channel,
     :connected,
     :txn_context,
@@ -25,19 +28,23 @@ defmodule ExDgraph.Protocol do
   ]
 
   @impl true
-  def connect(_opts) do
-    host = to_charlist(ExDgraph.config(:hostname))
-    port = ExDgraph.config(:port)
+  def connect(opts) do
+    opts = default_opts(opts)
 
-    opts =
-      []
-      |> set_ssl_opts()
-      |> Keyword.put(:adapter_opts, %{http2_opts: %{keepalive: ExDgraph.config(:keepalive)}})
+    host = to_charlist(opts[:hostname])
+    port = normalize_port(opts[:port])
 
-    case GRPC.Stub.connect("#{host}:#{port}", opts) do
-      {:ok, channel} ->
-        state = %__MODULE__{channel: channel}
-        {:ok, state}
+    # TODO: with statement?
+    case gen_stub_options(opts) do
+      {:ok, stub_opts} ->
+        case Stub.connect("#{host}:#{port}", stub_opts) do
+          {:ok, channel} ->
+            state = %__MODULE__{opts: opts, channel: channel}
+            {:ok, state}
+
+          {:error, reason} ->
+            {:error, %Error{action: :connect, reason: reason}}
+        end
 
       {:error, reason} ->
         {:error, %Error{action: :connect, reason: reason}}
@@ -103,16 +110,21 @@ defmodule ExDgraph.Protocol do
   end
 
   @impl true
+  def handle_prepare(query, _opts, %{txn_context: txn_context} = state) do
+    {:ok, %{query | txn_context: txn_context}, state}
+  end
+
+  @impl true
   def handle_execute(
         %QueryStatement{statement: statement} = query,
         _params,
         _,
         %{channel: channel} = state
+        %{channel: channel, opts: opts} = state
       ) do
     request = ExDgraph.Api.Request.new(query: statement)
-    timeout = ExDgraph.config(:timeout)
 
-    case ExDgraph.Api.Dgraph.Stub.query(channel, request, timeout: timeout) do
+    case ExDgraph.Api.Dgraph.Stub.query(channel, request, timeout: opts[:timeout]) do
       {:ok, res} ->
         {:ok, query, res, state}
 
@@ -165,11 +177,11 @@ defmodule ExDgraph.Protocol do
         _params,
         _,
         %{channel: channel} = state
+        %{channel: channel, opts: opts} = state
       ) do
     operation = Api.Operation.new(drop_all: drop_all, schema: schema, drop_attr: drop_attr)
-    timeout = ExDgraph.config(:timeout)
 
-    case ExDgraph.Api.Dgraph.Stub.alter(channel, operation, timeout: timeout) do
+    case ExDgraph.Api.Dgraph.Stub.alter(channel, operation, timeout: opts[:timeout]) do
       {:ok, res} ->
         {:ok, query, res, state}
 
@@ -181,10 +193,8 @@ defmodule ExDgraph.Protocol do
       {:error, e, state}
   end
 
-  defp do_mutate(%{channel: channel} = state, dgraph_query, query) do
-    timeout = ExDgraph.config(:timeout)
-
-    case ExDgraph.Api.Dgraph.Stub.mutate(channel, dgraph_query, timeout: timeout) do
+  defp do_mutate(%{channel: channel, opts: opts} = state, dgraph_query, query) do
+    case ExDgraph.Api.Dgraph.Stub.mutate(channel, dgraph_query, timeout: opts[:timeout]) do
       {:ok, res} ->
         {:ok, query, res, state}
 
@@ -196,31 +206,101 @@ defmodule ExDgraph.Protocol do
       {:error, e, state}
   end
 
-  defp configure_ssl(ssl_opts \\ []) do
-    case ExDgraph.config(:ssl) do
+  @spec default_opts(Keyword.t()) :: Keyword.t()
+  defp default_opts(opts \\ []) do
+    opts
+    |> Keyword.put_new(:hostname, System.get_env("DGRAPH_HOST") || 'localhost')
+    |> Keyword.put_new(:port, System.get_env("DGRAPH_PORT") || 9080)
+    |> Keyword.put_new(:name, :ex_dgraph)
+    |> Keyword.put_new(:timeout, 15_000)
+    |> Keyword.put_new(:ssl, false)
+    |> Keyword.put_new(:tls_client_auth, false)
+    |> Keyword.put_new(:certfile, nil)
+    |> Keyword.put_new(:keyfile, nil)
+    |> Keyword.put_new(:cacertfile, nil)
+    |> Keyword.put_new(:enforce_struct_schema, false)
+    |> Keyword.put_new(:keepalive, :infinity)
+    # DBConnection config options
+    |> Keyword.put_new(:backoff_min, 1_000)
+    |> Keyword.put_new(:backoff_max, 30_000)
+    |> Keyword.put_new(:backoff_type, :rand_exp)
+    |> Keyword.put_new(:pool_size, 5)
+    |> Keyword.put_new(:idle_interval, 5_000)
+    |> Keyword.put_new(:max_restarts, 3)
+    |> Keyword.put_new(:max_seconds, 5)
+    |> Keyword.update!(:port, &normalize_port/1)
+    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+  end
+
+  def gen_stub_options(opts) do
+    adapter_opts = %{http2_opts: %{keepalive: opts[:keepalive]}}
+    stub_opts = [adapter_opts: adapter_opts]
+
+    case gen_ssl_config(opts) do
+      {:ok, nil} ->
+        {:ok, stub_opts}
+
+      {:ok, ssl_config} ->
+        {:ok, Keyword.put(stub_opts, :cred, GRPC.Credential.new(ssl: ssl_config))}
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  def gen_ssl_config(opts) do
+    if opts[:ssl] do
+      case opts[:cacertfile] do
+        nil ->
+          {:error, {:not_provided, :cacertfile}}
+
+        cacertfile ->
+          with {:ok, tls_config} <- check_tls(opts) do
+            ssl_config = [{:cacertfile, cacertfile} | tls_config]
+            ssl_config = for {key, value} <- ssl_config, do: {key, to_charlist(value)}
+            {:ok, ssl_config}
+          end
+      end
+    else
+      {:ok, nil}
+    end
+  end
+
+  defp check_tls(opts) do
+    case {opts[:certfile], opts[:keyfile]} do
+      {nil, nil} -> {:ok, []}
+      {_, nil} -> {:error, %Error{action: :connect, reason: {:not_provided, :keyfile}}}
+      {nil, _} -> {:error, %Error{action: :connect, reason: {:not_provided, :certfile}}}
+      {certfile, keyfile} -> {:ok, [certfile: certfile, keyfile: keyfile]}
+    end
+  end
+
+  defp configure_ssl(opts) do
+    case opts[:ssl] do
       true ->
-        add_ssl_file(ssl_opts, :cacertfile)
+        add_ssl_file(opts, :cacertfile)
 
       false ->
-        ssl_opts
+        opts
     end
   end
 
-  defp configure_tls_auth(ssl_opts \\ []) do
-    case ExDgraph.config(:tls_client_auth) do
+  defp configure_tls_auth(opts) do
+    case opts[:tls_client_auth] do
       true ->
-        ssl_opts
+        opts
         |> add_ssl_file(:certfile)
         |> add_ssl_file(:keyfile)
         |> add_ssl_file(:certfile)
 
       false ->
-        ssl_opts
+        opts
     end
   end
 
-  defp add_ssl_file(ssl_opts \\ [], type) do
-    Keyword.put(ssl_opts, type, validate_tls_file(type, ExDgraph.config(type)))
+  defp add_ssl_file(opts, type) do
+    path = Keyword.fetch!(opts, type)
+    Keyword.put(opts, type, validate_tls_file(type, path))
   end
 
   defp validate_tls_file(type, path) do
@@ -231,14 +311,15 @@ defmodule ExDgraph.Protocol do
       false ->
         raise Exception,
           code: 2,
-          message: "SSL configuration error. File #{type} '#{ExDgraph.config(type)}' not found"
+          message: "SSL configuration error. File #{type} '#{path}' not found"
     end
   end
 
-  defp set_ssl_opts(opts \\ []) do
-    if ExDgraph.config(:ssl) || ExDgraph.config(:tls_client_auth) do
+  defp set_ssl_opts(opts) do
+    if opts[:ssl] || opts[:tls_client_auth] do
       ssl_opts =
-        configure_ssl()
+        opts
+        |> configure_ssl()
         |> configure_tls_auth()
 
       Keyword.put(opts, :cred, GRPC.Credential.new(ssl: ssl_opts))
@@ -246,4 +327,7 @@ defmodule ExDgraph.Protocol do
       opts
     end
   end
+
+  defp normalize_port(port) when is_binary(port), do: String.to_integer(port)
+  defp normalize_port(port) when is_integer(port), do: port
 end
