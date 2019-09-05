@@ -146,8 +146,8 @@ defmodule ExDgraph.Protocol do
   @impl true
   def handle_execute(
         %MutationStatement{statement: "", set_json: set_json} = query,
-        _params,
-        _,
+        _request,
+        _opts,
         state
       ) do
     dgraph_query = ExDgraph.Api.Mutation.new(set_json: set_json, commit_now: true)
@@ -172,7 +172,6 @@ defmodule ExDgraph.Protocol do
         %OperationStatement{drop_all: drop_all, schema: schema, drop_attr: drop_attr} = query,
         _params,
         _,
-        %{channel: channel} = state
         %{channel: channel, opts: opts} = state
       ) do
     operation = Api.Operation.new(drop_all: drop_all, schema: schema, drop_attr: drop_attr)
