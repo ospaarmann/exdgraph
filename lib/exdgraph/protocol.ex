@@ -13,7 +13,7 @@ defmodule ExDgraph.Protocol do
     Exception,
     MutationStatement,
     OperationStatement,
-    QueryStatement
+    Query
   }
 
   alias GRPC.Stub
@@ -116,10 +116,9 @@ defmodule ExDgraph.Protocol do
 
   @impl true
   def handle_execute(
-        %QueryStatement{statement: statement} = query,
-        _params,
-        _,
-        %{channel: channel} = state
+        %Query{statement: statement} = query,
+        _request,
+        _opts,
         %{channel: channel, opts: opts} = state
       ) do
     request = ExDgraph.Api.Request.new(query: statement)
