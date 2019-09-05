@@ -489,15 +489,29 @@ defmodule ExDgraph do
       {:error, [code: 2, message: "while lexing invalid_statement: Invalid operation type: invalid_statement"]}
 
   """
-  @spec query(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
-  defdelegate query(conn, statement), to: Query
+  @spec query(conn, iodata, map, Keyword.t()) :: {:ok, map} | {:error, Dgraph.Error.t() | term}
+  def query(conn, statement, parameters \\ %{}, opts \\ []) do
+    query = %Query{statement: statement}
+
+    with {:ok, %Query{} = query, result} <-
+           DBConnection.prepare_execute(conn, query, parameters, opts),
+         do: {:ok, query, result}
+  end
 
   @doc """
   The same as `query/2` but raises a ExDgraph.Exception if it fails.
   Returns the server response otherwise.
   """
   @spec query!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
-  defdelegate query!(conn, statement), to: Query
+  def query!(conn, statement) do
+    case query(conn, statement) do
+      {:ok, r} ->
+        r
+
+      {:error, code: code, message: message} ->
+        raise Exception, code: code, message: message
+    end
+  end
 
   ## Mutation
   ######################
