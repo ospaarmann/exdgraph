@@ -41,7 +41,6 @@ defmodule ExDgraph.MixProject do
       {:elixir_uuid, "~> 1.2"},
       {:grpc, "~> 0.3.1"},
       {:jason, "~> 1.1"},
-      {:morphix, "~> 0.6.0"},
       {:protobuf, "~> 0.6.1"},
       {:excoveralls, "~> 0.10", only: :test},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},

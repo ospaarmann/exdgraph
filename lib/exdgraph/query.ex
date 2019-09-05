@@ -30,16 +30,13 @@ defimpl DBConnection.Query, for: ExDgraph.Query do
   def encode(_query, data, _), do: data
 
   def decode(_query, %ExDgraph.Api.Response{json: json, schema: schema, txn: txn} = result, _opts) do
-    decoded = Jason.decode!(json)
-
-    transformed =
-      case Morphix.atomorphiform(decoded) do
-        {:ok, parsed} -> parsed
-        _ -> json
-      end
+    data =
+      json
+      |> Jason.decode!()
+      |> Utils.atomify_map_keys()
 
     %Result{
-      data: transformed,
+      data: data,
       schema: schema,
       txn: txn
     }
