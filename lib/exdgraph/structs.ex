@@ -12,3 +12,10 @@ defmodule ExDgraph.Error do
   end
 end
 
+defmodule ExDgraph.Result do
+  @moduledoc """
+  Results from a query are wrapped in ExDgraph.Result
+  """
+
+  defstruct [:data, :schema, :txn]
+end
