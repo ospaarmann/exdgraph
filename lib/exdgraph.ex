@@ -343,13 +343,19 @@ defmodule ExDgraph do
 
   use Supervisor
 
-  @pool_name :ex_dgraph
-  @timeout 15_000
-
   alias ExDgraph.Api.{Mutation, Operation}
+  alias ExDgraph.{Operation, Mutation, Protocol, Query, Utils}
 
   @type conn :: DBConnection.conn()
   # @type transaction :: DBConnection.t()
+
+  @pool_name :ex_dgraph
+
+  # Inherited from DBConnection
+
+  @idle_timeout 5000
+  @pool_timeout 5000
+  @timeout 15000
 
   @doc """
   Start the connection process and connect to Dgraph
@@ -361,6 +367,8 @@ defmodule ExDgraph do
     - `:password` - User password;
     - `:pool_size` - maximum pool size;
     - `:timeout` - Connect timeout in milliseconds (default: `#{@timeout}`) for  DBConnection and the GRPC client deadline.
+    - `:idle_timeout` - Idle timeout to ping database to maintain a connection
+      (default: `#{@idle_timeout}`)
     - `:ssl` - If to use ssl for the connection (please see configuration example).
       If you set this option, you also have to set `cacertfile` to the correct path.
     - `:tls_client_auth` - If to use TLS client authentication for the connection
@@ -406,20 +414,8 @@ defmodule ExDgraph do
       {:ok, pid} = ExDgraph.start_link(opts)
   """
   @spec start_link(Keyword.t()) :: Supervisor.on_start()
-  def start_link(opts) do
-    Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
-  end
-
-  @doc false
-  def init(opts) do
-    cnf = Utils.default_config(opts)
-
-    children = [
-      {ExDgraph.ConfigAgent, cnf},
-      DBConnection.child_spec(ExDgraph.Protocol, cnf)
-    ]
-
-    Supervisor.init(children, strategy: :one_for_one)
+  def start_link(opts \\ []) do
+    DBConnection.start_link(Protocol, opts)
   end
 
   @doc """
