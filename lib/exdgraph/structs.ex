@@ -11,3 +11,4 @@ defmodule ExDgraph.Error do
     "#{action} failed with #{inspect(reason)}"
   end
 end
+
