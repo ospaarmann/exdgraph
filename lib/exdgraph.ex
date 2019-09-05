@@ -505,11 +505,11 @@ defmodule ExDgraph do
   @spec query!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
   def query!(conn, statement) do
     case query(conn, statement) do
-      {:ok, r} ->
-        r
+      {:ok, query, result} ->
+        result
 
-      {:error, code: code, message: message} ->
-        raise Exception, code: code, message: message
+      {:error, error} ->
+        raise error
     end
   end
 
