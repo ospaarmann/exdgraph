@@ -89,7 +89,7 @@ defmodule ExDgraph.Utils do
         Map.put(acc, key, atomify_map_keys(value))
 
       {key, value}, acc when is_binary(key) ->
-        Map.put(acc, String.to_existing_atom(key), atomify_map_keys(value))
+        Map.put(acc, String.to_atom(key), atomify_map_keys(value))
     end)
   end
 
