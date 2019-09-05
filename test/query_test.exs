@@ -18,14 +18,9 @@ defmodule ExDgraph.QueryTest do
   """
 
   setup_all do
-    conn = ExDgraph.conn()
-    drop_all()
-    import_starwars_sample()
-
-    on_exit(fn ->
-      # close channel ?
-      :ok
-    end)
+    {:ok, conn} = ExDgraph.start_link()
+    ExDgraph.operation(conn, %{drop_all: true})
+    import_starwars_sample(conn)
 
     [conn: conn]
   end
