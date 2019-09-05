@@ -13,6 +13,23 @@ defmodule ExDgraphTest do
     [conn: conn]
   end
 
+  describe "start_link/1" do
+    test "it starts the client" do
+      {status, pid} = ExDgraph.start_link()
+      assert status == :ok
+      assert Process.alive?(pid)
+    end
+
+    test "it starts the process in the DBConnection.ConnectionPool" do
+      {status, pid} = ExDgraph.start_link()
+      assert status == :ok
+      assert Process.alive?(pid)
+      process_as_map = Process.info(pid) |> Enum.into(%{})
+      {ancestor, :init, _} = process_as_map.dictionary[:"$initial_call"]
+      assert ancestor == DBConnection.ConnectionPool
+    end
+  end
+
   describe "connection" do
     test "connection_errors" do
       Process.flag(:trap_exit, true)
