@@ -2,7 +2,7 @@ defmodule ExDgraph.Error do
   @moduledoc """
   Dgraph or connection error are wrapped in ExDgraph.Error.
   """
-  defexception [:reason, :action]
+  defexception [:reason, :action, :code]
 
   @type t :: %ExDgraph.Error{}
 
