@@ -83,33 +83,6 @@ defmodule ExDgraph.Utils do
     end
   end
 
-  @doc """
-  Fills in the given `opts` with default options.
-  """
-  @spec default_config(Keyword.t()) :: Keyword.t()
-  def default_config(config \\ Application.get_env(:ex_dgraph, ExDgraph)) do
-    config
-    |> Keyword.put_new(:hostname, System.get_env("DGRAPH_HOST") || 'localhost')
-    |> Keyword.put_new(:port, System.get_env("DGRAPH_PORT") || 9080)
-    |> Keyword.put_new(:name, :ex_dgraph)
-    |> Keyword.put_new(:timeout, 15_000)
-    |> Keyword.put_new(:ssl, false)
-    |> Keyword.put_new(:tls_client_auth, false)
-    |> Keyword.put_new(:certfile, nil)
-    |> Keyword.put_new(:keyfile, nil)
-    |> Keyword.put_new(:cacertfile, nil)
-    |> Keyword.put_new(:enforce_struct_schema, false)
-    |> Keyword.put_new(:keepalive, :infinity)
-    # DBConnection config options
-    |> Keyword.put_new(:name, 1_000)
-    |> Keyword.put_new(:backoff_min, 1_000)
-    |> Keyword.put_new(:backoff_max, 30_000)
-    |> Keyword.put_new(:backoff_type, :rand_exp)
-    |> Keyword.put_new(:pool_size, 5)
-    |> Keyword.put_new(:idle_interval, 5_000)
-    |> Keyword.put_new(:max_restarts, 3)
-    |> Keyword.put_new(:max_seconds, 5)
-    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
   end
 end
 
