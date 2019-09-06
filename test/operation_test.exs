@@ -21,6 +21,18 @@ defmodule ExDgraph.OperationTest do
     assert payload == %Payload{data: ""}
   end
 
+  test "alter(%{drop_attr: attr}) is successful", %{conn: conn} do
+    {status, _operation, payload} = ExDgraph.alter(conn, %{drop_attr: "name"})
+    assert status == :ok
+    assert payload == %Payload{data: ""}
+  end
+
+  test "alter(%{schema: schema}) is successful", %{conn: conn} do
+    {status, _operation, payload} = ExDgraph.alter(conn, %{schema: "name: string @index(term) ."})
+    assert status == :ok
+    assert payload == %Payload{data: ""}
+  end
+
   test "alter/3 returns the operation", %{conn: conn} do
     {:ok, operation, _payload} = ExDgraph.alter(conn, %{drop_all: true})
     assert %{drop_all: true} = operation
