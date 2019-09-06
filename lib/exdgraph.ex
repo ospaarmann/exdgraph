@@ -730,8 +730,6 @@ defmodule ExDgraph do
       %{:ok, %ExDgraph.Api.Payload{Data: ""}}
 
   """
-  # @spec operation(conn, String.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
-  # defdelegate operation(conn, statement), to: Operation
   @spec alter(conn, iodata | map, Keyword.t()) :: {:ok, map} | {:error, ExDgraph.Error.t() | term}
   def alter(conn, query, opts \\ [])
 
@@ -766,11 +764,4 @@ defmodule ExDgraph do
         raise error
     end
   end
-
-  @doc """
-  The same as `operation/2` but raises an `ExDgraph.Exception` if it fails.
-  Returns the server response otherwise.
-  """
-  @spec operation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
-  defdelegate operation!(conn, statement), to: Operation
 end
