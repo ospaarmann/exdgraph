@@ -489,7 +489,7 @@ defmodule ExDgraph do
       {:error, [code: 2, message: "while lexing invalid_statement: Invalid operation type: invalid_statement"]}
 
   """
-  @spec query(conn, iodata, map, Keyword.t()) :: {:ok, map} | {:error, Dgraph.Error.t() | term}
+  @spec query(conn, iodata, map, Keyword.t()) :: {:ok, map} | {:error, ExDgraph.Error.t() | term}
   def query(conn, statement, parameters \\ %{}, opts \\ []) do
     query = %Query{statement: statement}
 
@@ -499,10 +499,10 @@ defmodule ExDgraph do
   end
 
   @doc """
-  The same as `query/2` but raises a ExDgraph.Exception if it fails.
+  The same as `query/3` but raises a ExDgraph.Exception if it fails.
   Returns the server response otherwise.
   """
-  @spec query!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
+  @spec query!(conn, String.t()) :: ExDgraph.Result | ExDgraph.Error
   def query!(conn, statement) do
     case query(conn, statement) do
       {:ok, query, result} ->
@@ -591,14 +591,14 @@ defmodule ExDgraph do
       }
 
   """
-  @spec mutation(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec mutation(conn, String.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
   defdelegate mutation(conn, statement), to: Mutation
 
   @doc """
   The same as `mutation/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec mutation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
+  @spec mutation!(conn, String.t()) :: ExDgraph.Result | ExDgraph.Exception
   defdelegate mutation!(conn, statement), to: Mutation
 
   @doc """
@@ -638,14 +638,14 @@ defmodule ExDgraph do
         }
       }
   """
-  @spec set_map(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_map(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
   defdelegate set_map(conn, map), to: Mutation
 
   @doc """
   The same as `set_map/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec set_map!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_map!(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
   defdelegate set_map!(conn, map), to: Mutation
 
   @doc """
@@ -691,14 +691,14 @@ defmodule ExDgraph do
         }
       }
   """
-  @spec set_struct(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_struct(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
   defdelegate set_struct(conn, map), to: Mutation
 
   @doc """
   The same as `set_struct/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec set_struct!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
+  @spec set_struct!(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
   defdelegate set_struct!(conn, map), to: Mutation
 
   ## Operation

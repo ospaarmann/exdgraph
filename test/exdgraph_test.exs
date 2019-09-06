@@ -66,7 +66,7 @@ defmodule ExDgraphTest do
       }
     """
 
-    test "query/2 with correct query returns {:ok, %Query{}, %Result{}}", %{conn: conn} do
+    test "query/3 with correct query returns {:ok, %Query{}, %Result{}}", %{conn: conn} do
       {status, %Query{} = _query, %Result{} = result} = ExDgraph.query(conn, @sample_query)
       assert status == :ok
       data = result.data
@@ -76,7 +76,7 @@ defmodule ExDgraphTest do
       assert length(starwars.starring) == 3
     end
 
-    test "query/2 with wrong query returns {:error, %Error{}}", %{conn: conn} do
+    test "query/3 with wrong query returns {:error, %Error{}}", %{conn: conn} do
       {status, %Error{} = error} = ExDgraph.query(conn, "wrong")
       assert status == :error
 
