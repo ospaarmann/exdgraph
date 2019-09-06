@@ -185,6 +185,26 @@ defmodule ExDgraph.Protocol do
     end
   end
 
+  @impl true
+  def handle_close(_query, _opts, state) do
+    {:ok, nil, state}
+  end
+
+  @impl true
+  def handle_deallocate(_query, _cursor, _opts, state) do
+    {:ok, nil, state}
+  end
+
+  @impl true
+  def handle_declare(query, _params, _opts, state) do
+    {:ok, query, nil, state}
+  end
+
+  @impl true
+  def handle_fetch(_query, _cursor, _opts, state) do
+    {:halt, nil, state}
+  end
+
   defp do_mutate(%{channel: channel, opts: opts} = state, dgraph_query, query) do
     case ExDgraph.Api.Dgraph.Stub.mutate(channel, dgraph_query, timeout: opts[:timeout]) do
       {:ok, res} ->
