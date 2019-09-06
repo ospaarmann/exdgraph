@@ -29,3 +29,15 @@ defmodule ExDgraph.Result do
 
   defstruct [:data, :schema, :txn]
 end
+
+defmodule ExDgraph.Payload do
+  @moduledoc """
+  Results from alter are wrapped in ExDgraph.Payload
+  """
+
+  @type t :: %__MODULE__{
+          data: %{optional(any) => any}
+        }
+
+  defstruct [:data]
+end
