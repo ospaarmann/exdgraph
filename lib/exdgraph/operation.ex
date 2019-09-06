@@ -2,58 +2,36 @@ defmodule ExDgraph.Operation do
   @moduledoc """
   Provides the functions for the callbacks from the DBConnection behaviour.
   """
-  alias ExDgraph.{Exception, OperationStatement}
+  alias ExDgraph.Error
 
-  @doc false
-  def operation(conn, operation) do
-    case operation_commit(conn, operation) do
-      {:error, f} ->
-        {:error, code: f.code, message: f.message}
+  defstruct drop_all: false, drop_attr: "", schema: "", txn_context: nil
+end
 
-      {:ok, %OperationStatement{}, result} ->
-        {:ok, result}
-    end
+defimpl DBConnection.Query, for: ExDgraph.Operation do
+  alias ExDgraph.{Operation, Payload}
+
+  def describe(query, _opts), do: query
+
+  def parse(%{drop_attr: drop_attr, schema: schema, drop_all: _} = query, _opts) do
+    %Operation{
+      query
+      | drop_attr: IO.iodata_to_binary(drop_attr),
+        schema: IO.iodata_to_binary(schema)
+    }
   end
 
-  @doc false
-  def operation!(conn, operation) do
-    case operation(conn, operation) do
-      {:ok, r} ->
-        r
-
-      {:error, code: code, message: message} ->
-        raise Exception, code: code, message: message
-    end
+  def encode(query, _, _) do
+    %{drop_all: drop_all, schema: schema, drop_attr: drop_attr} = query
+    %Operation{drop_all: drop_all, schema: schema, drop_attr: drop_attr}
   end
 
-  defp operation_commit(conn, operation) do
-    operation_processed =
-      operation
-      |> Map.put_new(:drop_all, false)
-      |> Map.put_new(:drop_attr, "")
-      |> Map.put_new(:schema, "")
-
-    exec = fn conn ->
-      operation = %OperationStatement{
-        drop_all: operation_processed.drop_all,
-        drop_attr: operation_processed.drop_attr,
-        schema: operation_processed.schema
-      }
-
-      case DBConnection.execute(conn, operation, %{}) do
-        {:ok, resp} ->
-          resp
-
-        other ->
-          other
-      end
-    end
-
-    # Response.transform(DBConnection.run(conn, exec, run_opts()))
-    DBConnection.run(conn, exec, run_opts())
-  end
-
-  defp run_opts do
-    [pool: ExDgraph.config(:pool)]
+  def decode(
+        _query,
+        %ExDgraph.Api.Payload{Data: data} = _result,
+        _opts
+      ) do
+    %Payload{
+      data: data
+    }
   end
 end

@@ -12,7 +12,7 @@ defmodule ExDgraph.Protocol do
     Error,
     Exception,
     MutationStatement,
-    OperationStatement,
+    Operation,
     Query
   }
 
@@ -169,9 +169,9 @@ defmodule ExDgraph.Protocol do
 
   @impl true
   def handle_execute(
-        %OperationStatement{drop_all: drop_all, schema: schema, drop_attr: drop_attr} = query,
+        %Operation{drop_all: drop_all, schema: schema, drop_attr: drop_attr} = query,
         _params,
-        _,
+        _opts,
         %{channel: channel, opts: opts} = state
       ) do
     operation = Api.Operation.new(drop_all: drop_all, schema: schema, drop_attr: drop_attr)
@@ -180,12 +180,9 @@ defmodule ExDgraph.Protocol do
       {:ok, res} ->
         {:ok, query, res, state}
 
-      {:error, f} ->
-        raise Exception, code: f.status, message: f.message
+      {:error, error} ->
+        {:error, %Error{action: :alter, code: error.status, reason: error.message}, state}
     end
-  rescue
-    e ->
-      {:error, e, state}
   end
 
   defp do_mutate(%{channel: channel, opts: opts} = state, dgraph_query, query) do

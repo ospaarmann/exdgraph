@@ -730,8 +730,42 @@ defmodule ExDgraph do
       %{:ok, %ExDgraph.Api.Payload{Data: ""}}
 
   """
-  @spec operation(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
-  defdelegate operation(conn, statement), to: Operation
+  # @spec operation(conn, String.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
+  # defdelegate operation(conn, statement), to: Operation
+  @spec alter(conn, iodata | map, Keyword.t()) :: {:ok, map} | {:error, ExDgraph.Error.t() | term}
+  def alter(conn, query, opts \\ [])
+
+  def alter(conn, query, opts) when is_binary(query) do
+    operation = %Operation{schema: query}
+
+    with {:ok, %Operation{} = operation, result} <-
+           DBConnection.prepare_execute(conn, operation, %{}, opts),
+         do: {:ok, query, result}
+  end
+
+  @spec alter(conn, iodata | map, Keyword.t()) :: {:ok, map} | {:error, ExDgraph.Error.t() | term}
+  def alter(conn, query, opts) when is_map(query) do
+    operation = struct(Operation, query)
+
+    with {:ok, %Operation{} = operation, result} <-
+           DBConnection.prepare_execute(conn, operation, %{}, opts),
+         do: {:ok, query, result}
+  end
+
+  @doc """
+  The same as `alter/3` but raises a ExDgraph.Exception if it fails.
+  Returns the server response otherwise.
+  """
+  @spec alter!(conn, String.t()) :: ExDgraph.Payload | ExDgraph.Error
+  def alter!(conn, query) do
+    case alter(conn, query) do
+      {:ok, query, payload} ->
+        payload
+
+      {:error, error} ->
+        raise error
+    end
+  end
 
   @doc """
   The same as `operation/2` but raises an `ExDgraph.Exception` if it fails.
