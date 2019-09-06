@@ -344,7 +344,7 @@ defmodule ExDgraph do
   use Supervisor
 
   alias ExDgraph.Api.{Mutation, Operation}
-  alias ExDgraph.{Operation, Mutation, Protocol, Query, Utils}
+  alias ExDgraph.{Operation, Mutation, Protocol, Query}
 
   @type conn :: DBConnection.conn()
   # @type transaction :: DBConnection.t()
@@ -354,7 +354,6 @@ defmodule ExDgraph do
   # Inherited from DBConnection
 
   @idle_timeout 5000
-  @pool_timeout 5000
   @timeout 15000
 
   @doc """
@@ -505,7 +504,7 @@ defmodule ExDgraph do
   @spec query!(conn, String.t()) :: ExDgraph.Result | ExDgraph.Error
   def query!(conn, statement) do
     case query(conn, statement) do
-      {:ok, query, result} ->
+      {:ok, _query, result} ->
         result
 
       {:error, error} ->
@@ -736,7 +735,7 @@ defmodule ExDgraph do
   def alter(conn, query, opts) when is_binary(query) do
     operation = %Operation{schema: query}
 
-    with {:ok, %Operation{} = operation, result} <-
+    with {:ok, %Operation{} = _operation, result} <-
            DBConnection.prepare_execute(conn, operation, %{}, opts),
          do: {:ok, query, result}
   end
@@ -745,7 +744,7 @@ defmodule ExDgraph do
   def alter(conn, query, opts) when is_map(query) do
     operation = struct(Operation, query)
 
-    with {:ok, %Operation{} = operation, result} <-
+    with {:ok, %Operation{} = _operation, result} <-
            DBConnection.prepare_execute(conn, operation, %{}, opts),
          do: {:ok, query, result}
   end
@@ -754,10 +753,10 @@ defmodule ExDgraph do
   The same as `alter/3` but raises a ExDgraph.Exception if it fails.
   Returns the server response otherwise.
   """
-  @spec alter!(conn, String.t()) :: ExDgraph.Payload | ExDgraph.Error
-  def alter!(conn, query) do
-    case alter(conn, query) do
-      {:ok, query, payload} ->
+  @spec alter!(conn, String.t(), Keyword.t()) :: ExDgraph.Payload | ExDgraph.Error
+  def alter!(conn, query, opts \\ []) do
+    case alter(conn, query, opts) do
+      {:ok, _query, payload} ->
         payload
 
       {:error, error} ->

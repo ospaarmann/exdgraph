@@ -2,13 +2,14 @@ defmodule ExDgraph.Error do
   @moduledoc """
   Dgraph or connection error are wrapped in ExDgraph.Error.
   """
-  defexception [:reason, :action, :code]
 
   @type t :: %ExDgraph.Error{
           reason: String.t(),
           action: atom(),
           code: non_neg_integer
         }
+
+  defexception [:reason, :action, :code]
 
   @impl true
   def message(%{action: action, reason: reason}) do
