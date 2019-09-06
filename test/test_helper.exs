@@ -61,7 +61,7 @@ defmodule ExDgraph.TestHelper do
   """
 
   def import_starwars_sample(conn) do
-    ExDgraph.operation(conn, %{schema: @starwars_schema})
+    ExDgraph.alter(conn, %{schema: @starwars_schema})
     {:ok, _} = ExDgraph.mutation(conn, @starwars_creation_mutation)
   end
 
@@ -71,7 +71,7 @@ defmodule ExDgraph.TestHelper do
 
   def drop_all() do
     conn = ExDgraph.conn()
-    ExDgraph.operation(conn, %{drop_all: true})
+    ExDgraph.alter(conn, %{drop_all: true})
   end
 end
 
