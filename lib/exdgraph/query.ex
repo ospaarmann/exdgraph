@@ -11,22 +11,22 @@ defimpl DBConnection.Query, for: ExDgraph.Query do
   Implementation of `DBConnection.Query` protocol.
   """
 
-  alias ExDgraph.{Result, Utils}
+  alias ExDgraph.{Query, Result, Utils}
 
-  def describe(query, _), do: query
+  def describe(query, _opts), do: query
 
   @doc """
   Parse a query.
 
   This function is called to parse a query term before it is prepared.
   """
-  def parse(%{statement: nil} = query), do: %{query | statement: ""}
+  def parse(%{statement: nil} = query, _opts), do: %Query{query | statement: ""}
 
-  def parse(%{statement: statement} = query, _) do
-    %{query | statement: IO.iodata_to_binary(statement)}
+  def parse(%{statement: statement} = query, _opts) do
+    %Query{query | statement: IO.iodata_to_binary(statement)}
   end
 
-  def encode(_query, data, _), do: data
+  def encode(_query, data, _opts), do: data
 
   def decode(
         _query,
