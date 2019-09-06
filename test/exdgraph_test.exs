@@ -27,14 +27,14 @@ defmodule ExDgraphTest do
 
       assert capture_log(fn ->
                {:ok, pid} = ExDgraph.start_link([hostname: "non_existing"] ++ opts)
-               assert_receive {:EXIT, ^pid, :killed}, 10000
+               assert_receive {:EXIT, ^pid, :killed}, 10_000
              end) =~
                "** (ExDgraph.Error) connect failed with \"Error when opening connection: :timeout\""
 
       assert capture_log(fn ->
                {:ok, pid} = ExDgraph.start_link([port: 700] ++ opts)
 
-               assert_receive {:EXIT, ^pid, :killed}, 10000
+               assert_receive {:EXIT, ^pid, :killed}, 10_000
              end) =~
                "** (ExDgraph.Error) connect failed with \"Error when opening connection: :timeout\""
     end

@@ -353,8 +353,8 @@ defmodule ExDgraph do
 
   # Inherited from DBConnection
 
-  @idle_timeout 5000
-  @timeout 15000
+  @idle_timeout 5_000
+  @timeout 15_000
 
   @doc """
   Start the connection process and connect to Dgraph
