@@ -43,7 +43,7 @@ defmodule ExDgraph.MixProject do
       {:jason, "~> 1.1"},
       {:protobuf, "~> 0.6.1"},
       {:excoveralls, "~> 0.10", only: :test},
-      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "> 0.0.0", only: :dev, runtime: false},
       {:mix_test_watch, "~> 0.5", only: :dev, runtime: false}
     ]
