@@ -35,7 +35,7 @@ defimpl DBConnection.Query, for: ExDgraph.Query do
     %QueryResult{
       data: data,
       schema: schema,
-      txn: txn
+      txn_context: txn
     }
   end
 

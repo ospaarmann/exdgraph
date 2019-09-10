@@ -44,7 +44,7 @@ defimpl DBConnection.Query, for: ExDgraph.Mutation do
 
     %MutationResult{
       data: data,
-      context: context,
+      txn_context: context,
       latency: latency,
       uids: uids
     }
@@ -60,7 +60,7 @@ defimpl DBConnection.Query, for: ExDgraph.Mutation do
       )
       when is_nil(set_json) and is_binary(statement) do
     %MutationResult{
-      context: context,
+      txn_context: context,
       latency: latency,
       uids: uids
     }

@@ -25,11 +25,11 @@ defmodule ExDgraph.QueryResult do
   @type t :: %__MODULE__{
           data: %{optional(any) => any},
           schema: [any()],
-          txn: %ExDgraph.Api.TxnContext{},
+          txn_context: %ExDgraph.Api.TxnContext{},
           uids: map() | nil
         }
 
-  defstruct [:data, :schema, :txn, :uids]
+  defstruct [:data, :schema, :txn_context, :uids]
 end
 
 defmodule ExDgraph.MutationResult do
@@ -42,11 +42,11 @@ defmodule ExDgraph.MutationResult do
   @type t :: %__MODULE__{
           data: %{optional(any) => any},
           uids: %{String.t() => String.t()},
-          context: Api.TxnContext.t() | nil,
+          txn_context: Api.TxnContext.t() | nil,
           latency: Api.Latency.t() | nil
         }
 
-  defstruct [:data, :uids, :context, :latency]
+  defstruct [:data, :uids, :txn_context, :latency]
 end
 
 defmodule ExDgraph.Payload do
