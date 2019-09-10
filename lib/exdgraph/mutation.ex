@@ -105,7 +105,7 @@ defimpl DBConnection.Query, for: ExDgraph.Mutation do
   defp insert_tmp_uids(map, acc \\ 0)
 
   defp insert_tmp_uids(map, acc) when is_list(map),
-    do: Enum.map(map, &insert_tmp_uids(&1, acc).())
+    do: Enum.map(map, &insert_tmp_uids(&1, acc))
 
   defp insert_tmp_uids(map, acc) when is_map(map) do
     map
