@@ -3,7 +3,7 @@ defmodule ExDgraph.QueryTest do
 
   use ExUnit.Case
   import ExDgraph.TestHelper
-  alias ExDgraph.{Error, Query, Result}
+  alias ExDgraph.{Error, Query, QueryResult}
 
   @sample_query """
     {
@@ -29,7 +29,7 @@ defmodule ExDgraph.QueryTest do
   end
 
   test "query/3 with correct query returns {:ok, %Query{}, %Result{}}", %{conn: conn} do
-    {status, %Query{} = _query, %Result{} = result} = ExDgraph.query(conn, @sample_query)
+    {status, %Query{} = _query, %QueryResult{} = result} = ExDgraph.query(conn, @sample_query)
     assert status == :ok
     data = result.data
     starwars = List.first(data.starwars)
@@ -49,7 +49,7 @@ defmodule ExDgraph.QueryTest do
   end
 
   test "query!/2 with correct query returns query_msg", %{conn: conn} do
-    %Result{} = result = ExDgraph.query!(conn, @sample_query)
+    %QueryResult{} = result = ExDgraph.query!(conn, @sample_query)
     data = result.data
     starwars = List.first(data.starwars)
     assert starwars.name == "Star Wars: Episode VI - Return of the Jedi"

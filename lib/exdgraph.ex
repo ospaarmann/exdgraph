@@ -343,7 +343,7 @@ defmodule ExDgraph do
 
   use Supervisor
 
-  alias ExDgraph.Api.{Mutation, Operation}
+  # alias ExDgraph.Api
   alias ExDgraph.{Operation, Mutation, Protocol, Query}
 
   @type conn :: DBConnection.conn()
@@ -501,7 +501,7 @@ defmodule ExDgraph do
   The same as `query/3` but raises a ExDgraph.Exception if it fails.
   Returns the server response otherwise.
   """
-  @spec query!(conn, String.t()) :: ExDgraph.Result | ExDgraph.Error
+  @spec query!(conn, String.t()) :: ExDgraph.QueryResult | ExDgraph.Error
   def query!(conn, statement) do
     case query(conn, statement) do
       {:ok, _query, result} ->

@@ -17,7 +17,7 @@ defimpl DBConnection.Query, for: ExDgraph.Query do
   Implementation of `DBConnection.Query` protocol.
   """
 
-  alias ExDgraph.{Query, Result, Utils}
+  alias ExDgraph.{Api, Query, QueryResult, Utils}
 
   @doc """
   This function is called to decode a result after it is returned by a connection callback module.
@@ -32,7 +32,7 @@ defimpl DBConnection.Query, for: ExDgraph.Query do
       |> Jason.decode!()
       |> Utils.atomify_map_keys()
 
-    %Result{
+    %QueryResult{
       data: data,
       schema: schema,
       txn: txn

@@ -17,18 +17,20 @@ defmodule ExDgraph.Error do
   end
 end
 
-defmodule ExDgraph.Result do
+defmodule ExDgraph.QueryResult do
   @moduledoc """
-  Results from a query are wrapped in ExDgraph.Result
+  Results from a query are wrapped in ExDgraph.QueryResult
   """
 
   @type t :: %__MODULE__{
           data: %{optional(any) => any},
           schema: [any()],
-          txn: %ExDgraph.Api.TxnContext{}
+          txn: %ExDgraph.Api.TxnContext{},
+          uids: map() | nil
         }
 
-  defstruct [:data, :schema, :txn]
+  defstruct [:data, :schema, :txn, :uids]
+end
 end
 
 defmodule ExDgraph.Payload do
