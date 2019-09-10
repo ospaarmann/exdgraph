@@ -137,12 +137,18 @@ defmodule ExDgraph.Protocol do
         %Mutation{statement: statement, set_json: set_json} = query,
         _params,
         _,
-        state
+        %{channel: channel, opts: opts} = state
       ) do
-    dgraph_query =
+    request =
       ExDgraph.Api.Mutation.new(set_nquads: statement, set_json: set_json, commit_now: true)
 
-    do_mutate(state, dgraph_query, query)
+    case ExDgraph.Api.Dgraph.Stub.mutate(channel, request, timeout: opts[:timeout]) do
+      {:ok, res} ->
+        {:ok, query, res, state}
+
+      {:error, error} ->
+        {:error, %Error{action: :query, code: error.status, reason: error.message}, state}
+    end
   end
 
   @impl true
@@ -181,19 +187,6 @@ defmodule ExDgraph.Protocol do
   @impl true
   def handle_fetch(_query, _cursor, _opts, state) do
     {:halt, nil, state}
-  end
-
-  defp do_mutate(%{channel: channel, opts: opts} = state, dgraph_query, query) do
-    case ExDgraph.Api.Dgraph.Stub.mutate(channel, dgraph_query, timeout: opts[:timeout]) do
-      {:ok, res} ->
-        {:ok, query, res, state}
-
-      {:error, f} ->
-        raise Exception, code: f.status, message: f.message
-    end
-  rescue
-    e ->
-      {:error, e, state}
   end
 
   @spec default_opts(Keyword.t()) :: Keyword.t()
