@@ -498,12 +498,12 @@ defmodule ExDgraph do
   end
 
   @doc """
-  The same as `query/3` but raises a ExDgraph.Exception if it fails.
+  The same as `query/3` but raises a ExDgraph.Error if it fails.
   Returns the server response otherwise.
   """
   @spec query!(conn, String.t()) :: ExDgraph.QueryResult | ExDgraph.Error
-  def query!(conn, statement) do
-    case query(conn, statement) do
+  def query!(conn, statement, opts \\ []) do
+    case query(conn, statement, opts) do
       {:ok, _query, result} ->
         result
 
