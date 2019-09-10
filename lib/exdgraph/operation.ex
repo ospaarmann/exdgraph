@@ -14,14 +14,14 @@ defmodule ExDgraph.Operation do
 end
 
 defimpl DBConnection.Query, for: ExDgraph.Operation do
-  alias ExDgraph.{Operation, Payload}
+  alias ExDgraph.{Api, Operation, Payload}
 
   @doc """
   This function is called to decode a result after it is returned by a connection callback module.
   """
   def decode(
         _query,
-        %ExDgraph.Api.Payload{Data: data} = _result,
+        %Api.Payload{Data: data} = _result,
         _opts
       ) do
     %Payload{
