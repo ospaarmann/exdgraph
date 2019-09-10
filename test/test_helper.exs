@@ -62,7 +62,7 @@ defmodule ExDgraph.TestHelper do
 
   def import_starwars_sample(conn) do
     ExDgraph.alter(conn, %{schema: @starwars_schema})
-    {:ok, _} = ExDgraph.mutation(conn, @starwars_creation_mutation)
+    {:ok, _, _} = ExDgraph.mutate(conn, @starwars_creation_mutation)
   end
 
   def starwars_creation_mutation() do

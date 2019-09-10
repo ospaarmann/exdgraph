@@ -1,167 +1,122 @@
 defmodule ExDgraph.Mutation do
   @moduledoc """
-  Provides the functions for the callbacks from the DBConnection behaviour.
+  Wrapper for mutations sent to DBConnection.
   """
-  alias ExDgraph.{Exception, MutationStatement, Transform}
 
-  @doc false
-  def mutation(conn, statement) do
-    case mutation_commit(conn, statement) do
-      {:ok, %MutationStatement{}, result} ->
-        {:ok, result}
+  alias ExDgraph.{Exception, Transform}
 
-      {:error, f} ->
-        {:error, code: f.code, message: f.message}
-    end
+  @type t :: %ExDgraph.Mutation{
+          statement: String.t() | map() | struct(),
+          set_json: String.t(),
+          txn_context: any(),
+          original_statement: any()
+        }
+
+  defstruct statement: nil, set_json: nil, txn_context: nil, original_statement: nil
+end
+
+defimpl DBConnection.Query, for: ExDgraph.Mutation do
+  @moduledoc """
+  Implementation of `DBConnection.Query` protocol.
+  """
+
+  alias ExDgraph.{Api, Mutation, MutationResult, Transform, Utils}
+
+  @doc """
+  This function is called to decode a result after it is returned by a connection callback module.
+  """
+  def decode(
+        %Mutation{
+          set_json: set_json,
+          statement: statement,
+          original_statement: original_statement
+        } = query,
+        %Api.Assigned{context: context, latency: latency, uids: uids} = _result,
+        _opts
+      )
+      when is_binary(set_json) and is_nil(statement) do
+    data =
+      set_json
+      |> Jason.decode!()
+      |> Utils.atomify_map_keys()
+      |> replace_tmp_uids(uids)
+      |> merge_result_with_statement(original_statement)
+
+    %MutationResult{
+      data: data,
+      context: context,
+      latency: latency,
+      uids: uids
+    }
   end
 
-  @doc false
-  def mutation!(conn, statement) do
-    case mutation(conn, statement) do
-      {:ok, %MutationStatement{}, result} ->
-        {:ok, result}
-
-      {:error, code: code, message: message} ->
-        raise Exception, code: code, message: message
-    end
+  def decode(
+        %Mutation{
+          set_json: set_json,
+          statement: statement
+        } = query,
+        %Api.Assigned{context: context, latency: latency, uids: uids} = _result,
+        _opts
+      )
+      when is_nil(set_json) and is_binary(statement) do
+    %MutationResult{
+      context: context,
+      latency: latency,
+      uids: uids
+    }
   end
 
-  @doc false
-  def set_map(conn, map) do
-    map_with_tmp_uids = insert_tmp_uids(map)
-    json = Jason.encode!(map_with_tmp_uids)
+  @doc """
+  This function is called to describe a query after it is prepared using a connection callback module.
+  """
+  def describe(query, _opts), do: query
 
-    case set_map_commit(conn, json, map_with_tmp_uids) do
-      {:ok, r} ->
-        {:ok, r}
+  @doc """
+  This function is called to encode a query before it is executed using a connection callback module.
+  """
+  def encode(_query, data, _opts), do: data
 
-      {:error, f} ->
-        {:error, code: f.code, message: f.message}
-    end
+  @doc """
+  This function is called to parse a query term before it is prepared using a connection callback module.
+  """
+  def parse(%{statement: %{__struct__: struct_name} = statement} = query, _opts) do
+    json =
+      statement
+      |> Map.from_struct()
+      |> insert_tmp_uids()
+      |> Jason.encode!()
+
+    %Mutation{query | statement: nil, set_json: json, original_statement: statement}
   end
 
-  @doc false
-  def set_map!(conn, map) do
-    case set_map(conn, map) do
-      {:ok, r} ->
-        r
+  def parse(%{statement: statement} = query, _opts) when is_map(statement) do
+    json =
+      statement
+      |> insert_tmp_uids()
+      |> Jason.encode!()
 
-      {:error, code: code, message: message} ->
-        raise Exception, code: code, message: message
-    end
+    %Mutation{query | statement: nil, set_json: json, original_statement: statement}
   end
 
-  @doc false
-  def set_struct(conn, struct) do
-    uids_and_schema_map = set_tmp_ids_and_schema(struct)
-    json = Jason.encode!(uids_and_schema_map)
-
-    case set_struct_commit(conn, json, uids_and_schema_map) do
-      {:ok, r} ->
-        {:ok, r}
-
-      {:error, f} ->
-        {:error, code: f.code, message: f.message}
-    end
+  def parse(%{statement: statement} = query, _opts) when is_binary(statement) do
+    %Mutation{query | statement: IO.iodata_to_binary(statement), original_statement: statement}
   end
 
-  @doc false
-  def set_struct!(conn, struct) do
-    case set_struct(conn, struct) do
-      {:ok, r} ->
-        r
+  defp insert_tmp_uids(map, acc \\ 0)
 
-      {:error, code: code, message: message} ->
-        raise Exception, code: code, message: message
-    end
-  end
+  defp insert_tmp_uids(map, acc) when is_list(map),
+    do: Enum.map(map, &insert_tmp_uids(&1, acc).())
 
-  defp mutation_commit(conn, statement) do
-    exec = fn conn ->
-      q = %MutationStatement{statement: statement}
-
-      case DBConnection.execute(conn, q, %{}) do
-        {:ok, resp} -> Transform.transform_mutation(resp)
-        other -> other
-      end
-    end
-
-    DBConnection.run(conn, exec)
-  end
-
-  defp set_map_commit(conn, json, map_with_tmp_uids) do
-    exec = fn conn ->
-      q = %MutationStatement{set_json: json}
-
-      case DBConnection.execute(conn, q, %{}) do
-        {:ok, %MutationStatement{}, result} ->
-          # Now exchange the tmp ids for the ones returned from the db
-          result_with_uids = replace_tmp_uids(map_with_tmp_uids, result.uids)
-          {:ok, Map.put(result, :result, result_with_uids)}
-
-        other ->
-          other
-      end
-    end
-
-    DBConnection.run(conn, exec)
-  end
-
-  defp set_struct_commit(conn, json, struct_with_tmp_uids) do
-    exec = fn conn ->
-      q = %MutationStatement{set_json: json}
-
-      case DBConnection.execute(conn, q, %{}) do
-        {:ok, %MutationStatement{}, result} ->
-          # Now exchange the tmp ids for the ones returned from the db
-          result_with_uids = replace_tmp_struct_uids(struct_with_tmp_uids, result.uids)
-          {:ok, Map.put(result, :result, result_with_uids)}
-
-        other ->
-          other
-      end
-    end
-
-    DBConnection.run(conn, exec)
-  end
-
-  defp insert_tmp_uids(map) when is_list(map), do: Enum.map(map, &insert_tmp_uids/1)
-
-  defp insert_tmp_uids(map) when is_map(map) do
+  defp insert_tmp_uids(map, acc) when is_map(map) do
     map
-    |> Map.update(:uid, "_:#{UUID.uuid4()}", fn existing_uuid -> existing_uuid end)
+    |> Map.update(:uid, "_:#{acc}", fn existing_uuid -> existing_uuid end)
     |> Enum.reduce(%{}, fn {key, map_value}, a ->
-      Map.merge(a, %{key => insert_tmp_uids(map_value)})
+      new_acc = acc + 1
+      Map.merge(a, %{key => insert_tmp_uids(map_value, new_acc)})
     end)
   end
 
-  defp insert_tmp_uids(value), do: value
-
-  defp set_tmp_ids_and_schema(map) when is_list(map), do: Enum.map(map, &set_tmp_ids_and_schema/1)
-
-  defp set_tmp_ids_and_schema(%x{} = map) do
-    schema = x |> get_schema_name()
-
-    map
-    |> Map.from_struct()
-    |> Map.update(:uid, "_:#{UUID.uuid4()}", fn
-      nil -> "_:#{UUID.uuid4()}"
-      existing_uuid -> existing_uuid
-    end)
-    |> Enum.reduce(%{}, fn {key, map_value}, a ->
-      set_schema(schema, {key, map_value}, a, ExDgraph.config(:enforce_struct_schema))
-    end)
-  end
-
-  defp set_tmp_ids_and_schema(map) when is_map(map) do
-    map
-    |> Map.update(:uid, "_:#{UUID.uuid4()}", fn existing_uuid -> existing_uuid end)
-    |> Enum.reduce(%{}, fn {key, map_value}, a ->
-      Map.merge(a, %{key => set_tmp_ids_and_schema(map_value)})
-    end)
-  end
-
-  defp set_tmp_ids_and_schema(value), do: value
+  defp insert_tmp_uids(value, acc), do: value
 
   defp replace_tmp_uids(map, uids) when is_list(map),
     do: Enum.map(map, &replace_tmp_uids(&1, uids))
@@ -181,37 +136,9 @@ defmodule ExDgraph.Mutation do
 
   defp replace_tmp_uids(value, _uids), do: value
 
-  defp replace_tmp_struct_uids(map, uids) when is_list(map),
-    do: Enum.map(map, &replace_tmp_struct_uids(&1, uids))
-
-  defp replace_tmp_struct_uids(map, uids) when is_map(map) do
-    map
-    |> Map.update(:uid, map[:uid], fn existing_uuid ->
-      case String.slice(existing_uuid, 0, 2) == "_:" do
-        true -> uids[String.replace_leading(existing_uuid, "_:", "")]
-        false -> existing_uuid
-      end
-    end)
-    |> Enum.reduce(%{}, fn {key, map_value}, a ->
-      # delete the schema prefix
-      key = key |> to_string() |> String.split(".") |> List.last() |> String.to_existing_atom()
-      Map.merge(a, %{key => replace_tmp_struct_uids(map_value, uids)})
-    end)
+  defp merge_result_with_statement(result, %{__struct__: struct_name} = _original_statement) do
+    struct(struct_name, result)
   end
 
-  defp replace_tmp_struct_uids(value, _uids), do: value
-
-  defp get_schema_name(schema) do
-    schema |> to_string() |> String.split(".") |> List.last() |> String.downcase()
-  end
-
-  defp set_schema(_schema_name, {:uid, map_value}, result, _is_enforced_schema),
-    do: Map.merge(result, %{:uid => set_tmp_ids_and_schema(map_value)})
-
-  defp set_schema(schema_name, {key, map_value}, result, is_enforced_schema)
-       when is_enforced_schema == true,
-       do: Map.merge(result, %{"#{schema_name}.#{key}" => set_tmp_ids_and_schema(map_value)})
-
-  defp set_schema(_schema_name, {key, map_value}, result, _is_enforced_schema),
-    do: Map.merge(result, %{key => set_tmp_ids_and_schema(map_value)})
+  defp merge_result_with_statement(result, _original_statement), do: result
 end

@@ -516,7 +516,7 @@ defmodule ExDgraph do
   ######################
 
   @doc """
-  Sends the mutation to the server and returns `{:ok, result}` or
+  Sends the mutation to the server and returns `{:ok, query, result}` or
   `{:error, error}` otherwise
 
   ## Examples
@@ -564,8 +564,9 @@ defmodule ExDgraph do
   \"\"\"
   ```
 
-      iex> ExDgraph.mutation(conn, starwars_creation_mutation)
+      iex> ExDgraph.mutate(conn, starwars_creation_mutation)
       %{:ok,
+        query,
         %{
           context: %ExDgraph.Api.TxnContext{
             aborted: false,
@@ -590,15 +591,40 @@ defmodule ExDgraph do
       }
 
   """
-  @spec mutation(conn, String.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
-  defdelegate mutation(conn, statement), to: Mutation
+  @spec mutate(conn, iodata | map() | struct(), Keyword.t()) ::
+          {:ok, map()} | {:ok, ExDgraph.MutationResult} | {:error, ExDgraph.Error.t() | term}
+  def mutate(conn, query, opts \\ [])
+
+  def mutate(conn, query, opts) do
+    mutation = %Mutation{statement: query}
+
+    with {:ok, %Mutation{} = _query, result} <-
+           DBConnection.prepare_execute(conn, mutation, %{}, opts),
+         do: {:ok, query, result}
+  end
+
+  @doc """
+  The same as `mutate/3` but raises a ExDgraph.Error if it fails.
+  Returns the server response otherwise.
+  """
+  @spec mutate(conn, iodata | map() | struct(), Keyword.t()) ::
+          ExDgraph.MutationResult | ExDgraph.Error.t()
+  def mutate!(conn, statement, opts \\ []) do
+    case mutate(conn, statement, opts) do
+      {:ok, _query, result} ->
+        result
+
+      {:error, error} ->
+        raise error
+    end
+  end
 
   @doc """
   The same as `mutation/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec mutation!(conn, String.t()) :: ExDgraph.Result | ExDgraph.Exception
-  defdelegate mutation!(conn, statement), to: Mutation
+  # @spec mutation!(conn, String.t()) :: ExDgraph.MutationResult | ExDgraph.Exception
+  # defdelegate mutation!(conn, statement), to: Mutation
 
   @doc """
   Allow you to pass a map to insert into the database. The function sends the mutation to the server and returns `{:ok, result}` or `{:error, error}` otherwise. Internally it uses Dgraphs `set_json`.
@@ -637,15 +663,15 @@ defmodule ExDgraph do
         }
       }
   """
-  @spec set_map(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
-  defdelegate set_map(conn, map), to: Mutation
+  # @spec set_map(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
+  # defdelegate set_map(conn, map), to: Mutation
 
   @doc """
   The same as `set_map/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec set_map!(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
-  defdelegate set_map!(conn, map), to: Mutation
+  # @spec set_map!(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
+  # defdelegate set_map!(conn, map), to: Mutation
 
   @doc """
   This function allow you to convert an struct type into a mutation (json based) type in dgraph.
@@ -690,15 +716,15 @@ defmodule ExDgraph do
         }
       }
   """
-  @spec set_struct(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
-  defdelegate set_struct(conn, map), to: Mutation
+  # @spec set_struct(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
+  # defdelegate set_struct(conn, map), to: Mutation
 
   @doc """
   The same as `set_struct/2` but raises an `ExDgraph.Exception` if it fails.
   Returns the server response otherwise.
   """
-  @spec set_struct!(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
-  defdelegate set_struct!(conn, map), to: Mutation
+  # @spec set_struct!(conn, Map.t()) :: {:ok, ExDgraph.Result} | {:error, ExDgraph.Error}
+  # defdelegate set_struct!(conn, map), to: Mutation
 
   ## Operation
   ######################

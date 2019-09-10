@@ -11,7 +11,7 @@ defmodule ExDgraph.Protocol do
     Api,
     Error,
     Exception,
-    MutationStatement,
+    Mutation,
     Operation,
     Query
   }
@@ -134,37 +134,15 @@ defmodule ExDgraph.Protocol do
 
   @impl true
   def handle_execute(
-        %MutationStatement{statement: statement, set_json: ""} = query,
+        %Mutation{statement: statement, set_json: set_json} = query,
         _params,
         _,
         state
       ) do
-    dgraph_query = ExDgraph.Api.Mutation.new(set_nquads: statement, commit_now: true)
-    do_mutate(state, dgraph_query, query)
-  end
+    dgraph_query =
+      ExDgraph.Api.Mutation.new(set_nquads: statement, set_json: set_json, commit_now: true)
 
-  @impl true
-  def handle_execute(
-        %MutationStatement{statement: "", set_json: set_json} = query,
-        _request,
-        _opts,
-        state
-      ) do
-    dgraph_query = ExDgraph.Api.Mutation.new(set_json: set_json, commit_now: true)
     do_mutate(state, dgraph_query, query)
-  end
-
-  @impl true
-  def handle_execute(
-        %MutationStatement{statement: _statement, set_json: _set_json},
-        _params,
-        _,
-        %{channel: channel} = state
-      ) do
-    raise Exception, code: 2, message: "Both set_json and statement defined"
-  rescue
-    e ->
-      {:error, e, state}
   end
 
   @impl true

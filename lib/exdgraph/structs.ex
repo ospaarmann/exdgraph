@@ -31,6 +31,22 @@ defmodule ExDgraph.QueryResult do
 
   defstruct [:data, :schema, :txn, :uids]
 end
+
+defmodule ExDgraph.MutationResult do
+  @moduledoc """
+  Results from a mutation are wrapped in ExDgraph.MutationResult
+  """
+
+  alias ExDgraph.Api
+
+  @type t :: %__MODULE__{
+          data: %{optional(any) => any},
+          uids: %{String.t() => String.t()},
+          context: Api.TxnContext.t() | nil,
+          latency: Api.Latency.t() | nil
+        }
+
+  defstruct [:data, :uids, :context, :latency]
 end
 
 defmodule ExDgraph.Payload do
