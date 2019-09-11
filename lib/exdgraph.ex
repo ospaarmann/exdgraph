@@ -512,6 +512,92 @@ defmodule ExDgraph do
     end
   end
 
+  @doc """
+  Queries the current Dgraph schema and returns `{:ok, result}` or
+  `{:error, error}` if it fails.
+
+  ## Parameters
+
+  - `conn`: The pool name from `ExDgraph.conn()`.
+  - `opts`: Options for DBConnection.
+
+  ## Examples
+
+      iex> ExDgraph.query_schema(conn)
+      %ExDgraph.QueryResult{
+        data: %{
+          schema: [
+            %{list: true, predicate: "_predicate_", type: "string"},
+            %{
+              count: true,
+              index: true,
+              predicate: "name",
+              tokenizer: ["exact", "term"],
+              type: "string"
+            },
+          ]
+        },
+        schema: [
+          %ExDgraph.Api.SchemaNode{
+            count: false,
+            index: false,
+            lang: false,
+            list: true,
+            predicate: "_predicate_",
+            reverse: false,
+            tokenizer: [],
+            type: "string",
+            upsert: false
+          },
+          %ExDgraph.Api.SchemaNode{
+            count: true,
+            index: true,
+            lang: false,
+            list: false,
+            predicate: "name",
+            reverse: false,
+            tokenizer: ["exact", "term"],
+            type: "string",
+            upsert: false
+          },
+        ],
+        txn_context: %ExDgraph.Api.TxnContext{
+          aborted: false,
+          commit_ts: 0,
+          keys: [],
+          lin_read: nil,
+          preds: [],
+          start_ts: 130675
+        },
+        uids: nil
+      }
+
+
+  """
+  @spec query!(conn, Keyword.t()) :: {:ok, ExDgraph.QueryResult} | {:ok, ExDgraph.Error}
+  def query_schema(conn, opts \\ []) do
+    case query(conn, "schema{}", opts) do
+      {:ok, _query, result} ->
+        {:ok, result}
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Same as `query_schema/2 but raises `ExDgraph.Error` if it fails.
+  """
+  def query_schema!(conn, opts \\ []) do
+    case query_schema(conn, opts) do
+      {:ok, result} ->
+        result
+
+      {:error, error} ->
+        raise error
+    end
+  end
+
   ## Mutation
   ######################
 

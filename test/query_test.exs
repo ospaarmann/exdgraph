@@ -57,9 +57,24 @@ defmodule ExDgraph.QueryTest do
     assert length(starwars.starring) == 3
   end
 
-  test "query!/2 raises ExDgraph.Exception", %{conn: conn} do
+  test "query!/2 raises ExDgraph.Error", %{conn: conn} do
     assert_raise ExDgraph.Error, fn ->
       ExDgraph.query!(conn, "wrong")
     end
+  end
+
+  test "query_schema/2 returns the current schema", %{conn: conn} do
+    {status, %QueryResult{} = result} = ExDgraph.query_schema(conn)
+    assert status == :ok
+    schema = result.schema
+    data = result.data
+
+    assert Enum.any?(schema, fn %{__struct__: struct, predicate: predicate} ->
+             struct == ExDgraph.Api.SchemaNode and predicate == "name"
+           end)
+
+    assert Enum.any?(data.schema, fn %{predicate: predicate} ->
+             predicate == "name"
+           end)
   end
 end
