@@ -38,7 +38,6 @@ defmodule ExDgraph.MixProject do
   defp deps do
     [
       {:db_connection, "~> 2.1"},
-      {:elixir_uuid, "~> 1.2"},
       {:grpc, "~> 0.3.1"},
       {:jason, "~> 1.1"},
       {:protobuf, "~> 0.6.1"},
