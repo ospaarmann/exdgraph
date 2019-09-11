@@ -3,8 +3,6 @@ defmodule ExDgraph.Mutation do
   Wrapper for mutations sent to DBConnection.
   """
 
-  alias ExDgraph.{Exception, Transform}
-
   @type t :: %ExDgraph.Mutation{
           statement: String.t() | map() | struct(),
           set_json: String.t(),
@@ -20,7 +18,7 @@ defimpl DBConnection.Query, for: ExDgraph.Mutation do
   Implementation of `DBConnection.Query` protocol.
   """
 
-  alias ExDgraph.{Api, Mutation, MutationResult, Transform, Utils}
+  alias ExDgraph.{Api, Mutation, MutationResult, Utils}
 
   @doc """
   This function is called to decode a result after it is returned by a connection callback module.
