@@ -1,41 +1,60 @@
 defmodule ExDgraph.Query do
   @moduledoc """
-  Provides the functions for the callbacks from the DBConnection behaviour.
+  Wrapper for queries sent to DBConnection.
   """
-  alias ExDgraph.{Exception, QueryStatement, Transform}
 
-  @doc false
-  def query(conn, statement) do
-    case query_commit(conn, statement) do
-      {:error, f} -> {:error, code: Map.get(f, :code, Map.get(f, :status)), message: f.message}
-      r -> {:ok, r}
-    end
+  @type t :: %ExDgraph.Query{
+          statement: String.t(),
+          parameters: any(),
+          txn_context: any()
+        }
+
+  defstruct [:statement, :parameters, :txn_context]
+end
+
+defimpl DBConnection.Query, for: ExDgraph.Query do
+  @moduledoc """
+  Implementation of `DBConnection.Query` protocol.
+  """
+
+  alias ExDgraph.{Api, Query, QueryResult, Utils}
+
+  @doc """
+  This function is called to decode a result after it is returned by a connection callback module.
+  """
+  def decode(
+        _query,
+        %ExDgraph.Api.Response{json: json, schema: schema, txn: txn} = _result,
+        _opts
+      ) do
+    data =
+      json
+      |> Jason.decode!()
+      |> Utils.atomify_map_keys()
+
+    %QueryResult{
+      data: data,
+      schema: schema,
+      txn_context: txn
+    }
   end
 
-  @doc false
-  def query!(conn, statement) do
-    case query(conn, statement) do
-      {:ok, r} ->
-        r
+  @doc """
+  This function is called to describe a query after it is prepared using a connection callback module.
+  """
+  def describe(query, _opts), do: query
 
-      {:error, code: code, message: message} ->
-        raise Exception, code: code, message: message
-    end
-  end
+  @doc """
+  This function is called to encode a query before it is executed using a connection callback module.
+  """
+  def encode(_query, data, _opts), do: data
 
-  defp query_commit(conn, statement) do
-    exec = fn conn ->
-      q = %QueryStatement{statement: statement}
+  @doc """
+  This function is called to parse a query term before it is prepared using a connection callback module.
+  """
+  def parse(%{statement: nil} = query, _opts), do: %Query{query | statement: ""}
 
-      case DBConnection.execute(conn, q, %{}) do
-        {:ok, resp} -> Transform.transform_query(resp)
-        other -> other
-      end
-    end
-    DBConnection.run(conn, exec, run_opts())
-  end
-
-  defp run_opts do
-    [pool: ExDgraph.config(:pool), timeout: ExDgraph.config(:timeout)]
+  def parse(%{statement: statement} = query, _opts) do
+    %Query{query | statement: IO.iodata_to_binary(statement)}
   end
 end

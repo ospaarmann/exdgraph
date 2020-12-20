@@ -1,6 +1,6 @@
 defmodule ExDgraph do
   @moduledoc """
-  ExDgraph is a gRPC based client for the Dgraph database. It uses the DBConnection behaviour to support transactions and connection pooling via Poolboy. Works with Dgraph v1.0.16 (latest).
+  ExDgraph is a gRPC based client for the Dgraph database. It uses DBConnection to support transactions and connection pooling. Works with Dgraph v1.0.16 (latest).
 
   ## Installation
 
@@ -41,7 +41,6 @@ defmodule ExDgraph do
     hostname: 'localhost',
     port: 9080,
     pool_size: 5,
-    max_overflow: 1,
     keepalive: :infinity
   ```
 
@@ -52,9 +51,7 @@ defmodule ExDgraph do
     hostname: 'localhost',
     port: 9080,
     pool_size: 5,
-    max_overflow: 1
     timeout: 15_000, # This value is used for the DBConnection timeout and the GRPC client deadline
-    pool: DBConnection.Poolboy,
     ssl: false,
     tls_client_auth: false,
     certfile: nil,
@@ -297,7 +294,7 @@ defmodule ExDgraph do
   {:ok, msg} = channel |> ExDgraph.Api.Dgraph.Stub.query(request)
 
   # Parse result
-  json = Poison.decode!(msg.json)
+  json = Jason.decode!(msg.json)
   ```
 
   ## Using SSL
@@ -309,7 +306,6 @@ defmodule ExDgraph do
     # default port considered to be: 9080
     hostname: 'localhost',
     pool_size: 5,
-    max_overflow: 1,
     ssl: true,
     cacertfile: '/path/to/MyRootCA.pem'
   ```
@@ -330,7 +326,6 @@ defmodule ExDgraph do
     # default port considered to be: 9080
     hostname: 'localhost',
     pool_size: 5,
-    max_overflow: 1,
     ssl: true,
     cacertfile: '/path/to/MyRootCA.pem',
     certfile: '/path/to/MyClient1.pem',
@@ -348,14 +343,18 @@ defmodule ExDgraph do
 
   use Supervisor
 
-  @pool_name :ex_dgraph_pool
-  @timeout 15_000
-
-  alias ExDgraph.Api.{Mutation, Operation}
-  alias ExDgraph.{ConfigAgent, Operation, Mutation, Query, Utils}
+  # alias ExDgraph.Api
+  alias ExDgraph.{Operation, Mutation, Protocol, Query}
 
   @type conn :: DBConnection.conn()
   # @type transaction :: DBConnection.t()
+
+  @pool_name :ex_dgraph
+
+  # Inherited from DBConnection
+
+  @idle_timeout 5_000
+  @timeout 15_000
 
   @doc """
   Start the connection process and connect to Dgraph
@@ -366,9 +365,9 @@ defmodule ExDgraph do
     - `:username` - Username;
     - `:password` - User password;
     - `:pool_size` - maximum pool size;
-    - `:max_overflow` - maximum number of workers created if pool is empty
     - `:timeout` - Connect timeout in milliseconds (default: `#{@timeout}`) for  DBConnection and the GRPC client deadline.
-    - `:pool` - The connection pool. Defaults to `DbConnection.Poolboy`.
+    - `:idle_timeout` - Idle timeout to ping database to maintain a connection
+      (default: `#{@idle_timeout}`)
     - `:ssl` - If to use ssl for the connection (please see configuration example).
       If you set this option, you also have to set `cacertfile` to the correct path.
     - `:tls_client_auth` - If to use TLS client authentication for the connection
@@ -386,8 +385,7 @@ defmodule ExDgraph do
       config :ex_dgraph, ExDgraph,
         hostname: 'localhost',
         port: 9080,
-        pool_size: 5,
-        max_overflow: 1
+        pool_size: 5
 
   ## With SSL
 
@@ -395,7 +393,6 @@ defmodule ExDgraph do
         # default port considered to be: 9080
         hostname: 'localhost',
         pool_size: 5,
-        max_overflow: 1,
         ssl: true,
         cacertfile: '/path/to/MyRootCA.pem'
 
@@ -405,7 +402,6 @@ defmodule ExDgraph do
         # default port considered to be: 9080
         hostname: 'localhost',
         pool_size: 5,
-        max_overflow: 1,
         ssl: true,
         cacertfile: '/path/to/MyRootCA.pem',
         certfile: '/path/to/MyClient1.pem',
@@ -417,41 +413,14 @@ defmodule ExDgraph do
       {:ok, pid} = ExDgraph.start_link(opts)
   """
   @spec start_link(Keyword.t()) :: Supervisor.on_start()
-  def start_link(opts) do
-    Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
-  end
-
-  @doc false
-  def init(opts) do
-    cnf = Utils.default_config(opts)
-
-    children = [
-      {ExDgraph.ConfigAgent, cnf},
-      DBConnection.child_spec(ExDgraph.Protocol, pool_config(cnf))
-    ]
-
-    Supervisor.init(children, strategy: :one_for_one)
+  def start_link(opts \\ []) do
+    DBConnection.start_link(Protocol, opts)
   end
 
   @doc """
   Returns a pool name which can be used to acquire a connection.
   """
   def conn, do: pool_name()
-
-  @doc """
-  Returns an environment specific ExDgraph configuration.
-  """
-  def config, do: ConfigAgent.get_config()
-
-  @doc false
-  def config(key), do: Keyword.get(config(), key)
-
-  @doc false
-  def config(key, default) do
-    Keyword.get(config(), key, default)
-  rescue
-    _ -> default
-  end
 
   @doc false
   def pool_name, do: @pool_name
@@ -519,21 +488,121 @@ defmodule ExDgraph do
       {:error, [code: 2, message: "while lexing invalid_statement: Invalid operation type: invalid_statement"]}
 
   """
-  @spec query(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
-  defdelegate query(conn, statement), to: Query
+  @spec query(conn, iodata, map, Keyword.t()) :: {:ok, map} | {:error, ExDgraph.Error.t() | term}
+  def query(conn, statement, parameters \\ %{}, opts \\ []) do
+    query = %Query{statement: statement}
+
+    with {:ok, %Query{} = query, result} <-
+           DBConnection.prepare_execute(conn, query, parameters, opts),
+         do: {:ok, query, result}
+  end
 
   @doc """
-  The same as `query/2` but raises a ExDgraph.Exception if it fails.
+  The same as `query/3` but raises a ExDgraph.Error if it fails.
   Returns the server response otherwise.
   """
-  @spec query!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
-  defdelegate query!(conn, statement), to: Query
+  @spec query!(conn, String.t()) :: ExDgraph.QueryResult | ExDgraph.Error
+  def query!(conn, statement, opts \\ []) do
+    case query(conn, statement, opts) do
+      {:ok, _query, result} ->
+        result
+
+      {:error, error} ->
+        raise error
+    end
+  end
+
+  @doc """
+  Queries the current Dgraph schema and returns `{:ok, result}` or
+  `{:error, error}` if it fails.
+
+  ## Parameters
+
+  - `conn`: The pool name from `ExDgraph.conn()`.
+  - `opts`: Options for DBConnection.
+
+  ## Examples
+
+      iex> ExDgraph.query_schema(conn)
+      %ExDgraph.QueryResult{
+        data: %{
+          schema: [
+            %{list: true, predicate: "_predicate_", type: "string"},
+            %{
+              count: true,
+              index: true,
+              predicate: "name",
+              tokenizer: ["exact", "term"],
+              type: "string"
+            },
+          ]
+        },
+        schema: [
+          %ExDgraph.Api.SchemaNode{
+            count: false,
+            index: false,
+            lang: false,
+            list: true,
+            predicate: "_predicate_",
+            reverse: false,
+            tokenizer: [],
+            type: "string",
+            upsert: false
+          },
+          %ExDgraph.Api.SchemaNode{
+            count: true,
+            index: true,
+            lang: false,
+            list: false,
+            predicate: "name",
+            reverse: false,
+            tokenizer: ["exact", "term"],
+            type: "string",
+            upsert: false
+          },
+        ],
+        txn_context: %ExDgraph.Api.TxnContext{
+          aborted: false,
+          commit_ts: 0,
+          keys: [],
+          lin_read: nil,
+          preds: [],
+          start_ts: 130675
+        },
+        uids: nil
+      }
+
+
+  """
+  @spec query!(conn, Keyword.t()) :: {:ok, ExDgraph.QueryResult} | {:ok, ExDgraph.Error}
+  def query_schema(conn, opts \\ []) do
+    case query(conn, "schema{}", opts) do
+      {:ok, _query, result} ->
+        {:ok, result}
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
+  Same as `query_schema/2 but raises `ExDgraph.Error` if it fails.
+  """
+  def query_schema!(conn, opts \\ []) do
+    case query_schema(conn, opts) do
+      {:ok, result} ->
+        result
+
+      {:error, error} ->
+        raise error
+    end
+  end
 
   ## Mutation
   ######################
 
   @doc """
-  Sends the mutation to the server and returns `{:ok, result}` or
+  Sends the mutation to the server and returns `{:ok, query, result}` or
   `{:error, error}` otherwise
 
   ## Examples
@@ -581,8 +650,9 @@ defmodule ExDgraph do
   \"\"\"
   ```
 
-      iex> ExDgraph.mutation(conn, starwars_creation_mutation)
+      iex> ExDgraph.mutate(conn, starwars_creation_mutation)
       %{:ok,
+        query,
         %{
           context: %ExDgraph.Api.TxnContext{
             aborted: false,
@@ -607,115 +677,33 @@ defmodule ExDgraph do
       }
 
   """
-  @spec mutation(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
-  defdelegate mutation(conn, statement), to: Mutation
+  @spec mutate(conn, iodata | map() | struct(), Keyword.t()) ::
+          {:ok, map()} | {:ok, ExDgraph.MutationResult} | {:error, ExDgraph.Error.t() | term}
+  def mutate(conn, query, opts \\ [])
+
+  def mutate(conn, query, opts) do
+    mutation = %Mutation{statement: query}
+
+    with {:ok, %Mutation{} = _query, result} <-
+           DBConnection.prepare_execute(conn, mutation, %{}, opts),
+         do: {:ok, query, result}
+  end
 
   @doc """
-  The same as `mutation/2` but raises an `ExDgraph.Exception` if it fails.
+  The same as `mutate/3` but raises a ExDgraph.Error if it fails.
   Returns the server response otherwise.
   """
-  @spec mutation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
-  defdelegate mutation!(conn, statement), to: Mutation
+  @spec mutate(conn, iodata | map() | struct(), Keyword.t()) ::
+          ExDgraph.MutationResult | ExDgraph.Error.t()
+  def mutate!(conn, statement, opts \\ []) do
+    case mutate(conn, statement, opts) do
+      {:ok, _query, result} ->
+        result
 
-  @doc """
-  Allow you to pass a map to insert into the database. The function sends the mutation to the server and returns `{:ok, result}` or `{:error, error}` otherwise. Internally it uses Dgraphs `set_json`.
-  The `result` is a map of all values you have passed in but with the field `uid` populated from the database.
-
-  ## Examples
-
-  ```elixir
-  map = %{
-     name: "Alice",
-     friends: %{
-       name: "Betty"
-     }
-   }
-   ```
-
-      iex> ExDgraph.set_map(conn, map)
-      %{:ok,
-        %{
-          context: %ExDgraph.Api.TxnContext{
-            aborted: false,
-            commit_ts: 1703,
-            keys: [],
-            lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 1508}},
-            start_ts: 1702
-          },
-          result: %{
-            friends: [%{name: "Betty", uid: "0xd82"}],
-            name: "Alice",
-            uid: "0xd81"
-          },
-          uids: %{
-            "763d617a-af34-4ff9-9863-e072bf85146d" => "0xd82",
-            "e94713a5-54a7-4e36-8ab8-0d3019409892" => "0xd81"
-          }
-        }
-      }
-  """
-  @spec set_map(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
-  defdelegate set_map(conn, map), to: Mutation
-
-  @doc """
-  The same as `set_map/2` but raises an `ExDgraph.Exception` if it fails.
-  Returns the server response otherwise.
-  """
-  @spec set_map!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
-  defdelegate set_map!(conn, map), to: Mutation
-
-  @doc """
-  This function allow you to convert an struct type into a mutation (json based) type in dgraph.
-  It also allows you to enforce the schema in database (adding a "class name" info before every predicate, this class name is the single name given to the elixir module struct) by activating the `enforce_struct_schema` in the config files.
-  The function sends the mutation to the server and returns `{:ok, result}` or `{:error, error}` otherwise.
-  Internally it uses Dgraphs `set_json`.
-  The `result` is a map without the "classname" (you can apply the built-in function `struct` to convert the map into the struct you desire) of all values you have passed in but with the field `uid` populated from the database.
-
-  ## Examples
-
-  ```elixir
-  struct_data = %MutationTest.Person{
-    name: "Alice",
-    identifier: "alice_json",
-    dogs: [
-      %MutationTest.Dog{
-        name: "Bello"
-      }
-    ]
-  }
-   ```
-
-      iex> ExDgraph.set_struct(conn, struct_data)
-      %{:ok,
-        %{
-          context: %ExDgraph.Api.TxnContext{
-            aborted: false,
-            commit_ts: 1703,
-            keys: [],
-            lin_read: %ExDgraph.Api.LinRead{ids: %{1 => 1508}},
-            start_ts: 1702
-          },
-          result: %{
-            dogs: [%{name: "Bello", uid: "0xd82"}],
-            name: "Alice",
-            uid: "0xd81"
-          },
-          uids: %{
-            "763d617a-af34-4ff9-9863-e072bf85146d" => "0xd82",
-            "e94713a5-54a7-4e36-8ab8-0d3019409892" => "0xd81"
-          }
-        }
-      }
-  """
-  @spec set_struct(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
-  defdelegate set_struct(conn, map), to: Mutation
-
-  @doc """
-  The same as `set_struct/2` but raises an `ExDgraph.Exception` if it fails.
-  Returns the server response otherwise.
-  """
-  @spec set_struct!(conn, Map.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
-  defdelegate set_struct!(conn, map), to: Mutation
+      {:error, error} ->
+        raise error
+    end
+  end
 
   ## Operation
   ######################
@@ -746,25 +734,38 @@ defmodule ExDgraph do
       %{:ok, %ExDgraph.Api.Payload{Data: ""}}
 
   """
-  @spec operation(conn, String.t()) :: {:ok, ExDgraph.Response} | {:error, ExDgraph.Error}
-  defdelegate operation(conn, statement), to: Operation
+  @spec alter(conn, iodata | map, Keyword.t()) :: {:ok, map} | {:error, ExDgraph.Error.t() | term}
+  def alter(conn, query, opts \\ [])
+
+  def alter(conn, query, opts) when is_binary(query) do
+    operation = %Operation{schema: query}
+
+    with {:ok, %Operation{} = _operation, result} <-
+           DBConnection.prepare_execute(conn, operation, %{}, opts),
+         do: {:ok, query, result}
+  end
+
+  @spec alter(conn, iodata | map, Keyword.t()) :: {:ok, map} | {:error, ExDgraph.Error.t() | term}
+  def alter(conn, query, opts) when is_map(query) do
+    operation = struct(Operation, query)
+
+    with {:ok, %Operation{} = _operation, result} <-
+           DBConnection.prepare_execute(conn, operation, %{}, opts),
+         do: {:ok, query, result}
+  end
 
   @doc """
-  The same as `operation/2` but raises an `ExDgraph.Exception` if it fails.
+  The same as `alter/3` but raises a ExDgraph.Exception if it fails.
   Returns the server response otherwise.
   """
-  @spec operation!(conn, String.t()) :: ExDgraph.Response | ExDgraph.Exception
-  defdelegate operation!(conn, statement), to: Operation
+  @spec alter!(conn, String.t(), Keyword.t()) :: ExDgraph.Payload | ExDgraph.Error
+  def alter!(conn, query, opts \\ []) do
+    case alter(conn, query, opts) do
+      {:ok, _query, payload} ->
+        payload
 
-  ## Helpers
-  ######################
-
-  defp pool_config(cnf) do
-    [
-      name: {:local, pool_name()},
-      pool: Keyword.get(cnf, :pool),
-      pool_size: Keyword.get(cnf, :pool_size),
-      pool_overflow: Keyword.get(cnf, :max_overflow)
-    ]
+      {:error, error} ->
+        raise error
+    end
   end
 end

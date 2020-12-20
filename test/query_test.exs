@@ -1,6 +1,9 @@
 defmodule ExDgraph.QueryTest do
-  use ExUnit.Case, async: true
+  @moduledoc false
+
+  use ExUnit.Case
   import ExDgraph.TestHelper
+  alias ExDgraph.{Error, Query, QueryResult}
 
   @sample_query """
     {
@@ -18,46 +21,60 @@ defmodule ExDgraph.QueryTest do
   """
 
   setup_all do
-    conn = ExDgraph.conn()
-    drop_all()
-    import_starwars_sample()
-
-    on_exit(fn ->
-      # close channel ?
-      :ok
-    end)
+    {:ok, conn} = ExDgraph.start_link()
+    ExDgraph.alter(conn, %{drop_all: true})
+    import_starwars_sample(conn)
 
     [conn: conn]
   end
 
-  test "query/2 with correct query returns {:ok, query_msg}", %{conn: conn} do
-    {status, query_msg} = ExDgraph.Query.query(conn, @sample_query)
+  test "query/3 with correct query returns {:ok, %Query{}, %Result{}}", %{conn: conn} do
+    {status, %Query{} = _query, %QueryResult{} = result} = ExDgraph.query(conn, @sample_query)
     assert status == :ok
-    res = query_msg.result
-    starwars = res[:starwars]
-    one = List.first(starwars)
-    assert "Star Wars: Episode VI - Return of the Jedi" == one[:name]
-    assert "1983-05-25" == one[:release_date]
+    data = result.data
+    starwars = List.first(data.starwars)
+    assert starwars.name == "Star Wars: Episode VI - Return of the Jedi"
+    assert starwars.release_date == "1983-05-25"
+    assert length(starwars.starring) == 3
   end
 
-  test "query/2 with wrong query returns {:error, error}", %{conn: conn} do
-    {status, error} = ExDgraph.Query.query(conn, "wrong")
+  test "query/3 with wrong query returns {:error, %Error{}}", %{conn: conn} do
+    {status, %Error{} = error} = ExDgraph.query(conn, "wrong")
     assert status == :error
-    assert error == [code: 2, message: "while lexing wrong: Invalid operation type: wrong"]
+
+    assert %Error{} = error
+    assert error.code == 2
+    assert error.action == :query
+    assert error.reason =~ "Invalid operation type: wrong"
   end
 
   test "query!/2 with correct query returns query_msg", %{conn: conn} do
-    query_msg = ExDgraph.Query.query!(conn, @sample_query)
-    res = query_msg.result
-    starwars = res[:starwars]
-    one = List.first(starwars)
-    assert "Star Wars: Episode VI - Return of the Jedi" == one[:name]
-    assert "1983-05-25" == one[:release_date]
+    %QueryResult{} = result = ExDgraph.query!(conn, @sample_query)
+    data = result.data
+    starwars = List.first(data.starwars)
+    assert starwars.name == "Star Wars: Episode VI - Return of the Jedi"
+    assert starwars.release_date == "1983-05-25"
+    assert length(starwars.starring) == 3
   end
 
-  test "query!/2 raises ExDgraph.Exception", %{conn: conn} do
-    assert_raise ExDgraph.Exception, fn ->
-      ExDgraph.Query.query!(conn, "wrong")
+  test "query!/2 raises ExDgraph.Error", %{conn: conn} do
+    assert_raise ExDgraph.Error, fn ->
+      ExDgraph.query!(conn, "wrong")
     end
+  end
+
+  test "query_schema/2 returns the current schema", %{conn: conn} do
+    {status, %QueryResult{} = result} = ExDgraph.query_schema(conn)
+    assert status == :ok
+    schema = result.schema
+    data = result.data
+
+    assert Enum.any?(schema, fn %{__struct__: struct, predicate: predicate} ->
+             struct == ExDgraph.Api.SchemaNode and predicate == "name"
+           end)
+
+    assert Enum.any?(data.schema, fn %{predicate: predicate} ->
+             predicate == "name"
+           end)
   end
 end

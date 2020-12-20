@@ -5,7 +5,7 @@ defmodule ExDgraph.MixProject do
     [
       app: :ex_dgraph,
       version: "0.2.0-beta.3",
-      elixir: "~> 1.6",
+      elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: description(),
@@ -30,30 +30,21 @@ defmodule ExDgraph.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      applications: [
-        :logger,
-        :db_connection,
-        :retry,
-        :grpc
-      ]
+      applications: [:logger, :db_connection, :grpc]
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:db_connection, "~> 2.1"},
       {:grpc, "~> 0.3.1"},
+      {:jason, "~> 1.1"},
       {:protobuf, "~> 0.6.1"},
-      {:poison, "~> 3.1"},
-      {:poolboy, "~> 1.5.2"},
-      {:db_connection, "~> 1.1"},
-      {:retry, "~> 0.11.2"},
-      {:morphix, "~> 0.6.0"},
-      {:ex_doc, "~> 0.19.0", only: :dev, runtime: false},
-      {:elixir_uuid, "~> 1.2"},
-      {:mix_test_watch, "~> 0.5", only: :dev, runtime: false},
       {:excoveralls, "~> 0.10", only: :test},
-      {:credo, "~> 1.0", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},
+      {:ex_doc, "> 0.0.0", only: :dev, runtime: false},
+      {:mix_test_watch, "~> 0.5", only: :dev, runtime: false}
     ]
   end
 

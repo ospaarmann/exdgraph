@@ -60,10 +60,9 @@ defmodule ExDgraph.TestHelper do
      _:st1 <running_time> "132" .
   """
 
-  def import_starwars_sample() do
-    conn = ExDgraph.conn()
-    ExDgraph.operation(conn, %{schema: @starwars_schema})
-    {:ok, _} = ExDgraph.mutation(conn, @starwars_creation_mutation)
+  def import_starwars_sample(conn) do
+    ExDgraph.alter(conn, %{schema: @starwars_schema})
+    {:ok, _, _} = ExDgraph.mutate(conn, @starwars_creation_mutation)
   end
 
   def starwars_creation_mutation() do
@@ -72,12 +71,12 @@ defmodule ExDgraph.TestHelper do
 
   def drop_all() do
     conn = ExDgraph.conn()
-    ExDgraph.operation(conn, %{drop_all: true})
+    ExDgraph.alter(conn, %{drop_all: true})
   end
 end
 
 if Process.whereis(ExDgraph.pool_name()) == nil do
-  {:ok, _pid} = ExDgraph.start_link(Application.get_env(:ex_dgraph, ExDgraph))
+  {:ok, _conn} = ExDgraph.start_link(Application.get_env(:ex_dgraph, ExDgraph))
 end
 
-Process.flag(:trap_exit, true)
+ExUnit.configure(exclude: [tls_tests: true])

@@ -1,56 +1,55 @@
 defmodule ExDgraph.Operation do
   @moduledoc """
-  Provides the functions for the callbacks from the DBConnection behaviour.
+  Wrapper for operations sent to DBConnection.
   """
-  alias ExDgraph.{Exception, OperationStatement}
 
-  @doc false
-  def operation(conn, operation) do
-    case operation_commit(conn, operation) do
-      {:error, f} ->
-        {:error, code: f.code, message: f.message}
+  @type t :: %ExDgraph.Operation{
+          drop_all: true | false | nil,
+          drop_attr: String.t(),
+          schema: String.t(),
+          txn_context: any()
+        }
 
-      r ->
-        {:ok, r}
-    end
+  defstruct drop_all: false, drop_attr: "", schema: "", txn_context: nil
+end
+
+defimpl DBConnection.Query, for: ExDgraph.Operation do
+  alias ExDgraph.{Api, Operation, Payload}
+
+  @doc """
+  This function is called to decode a result after it is returned by a connection callback module.
+  """
+  def decode(
+        _query,
+        %Api.Payload{Data: data} = _result,
+        _opts
+      ) do
+    %Payload{
+      data: data
+    }
   end
 
-  @doc false
-  def operation!(conn, operation) do
-    case operation(conn, operation) do
-      {:ok, r} ->
-        r
+  @doc """
+  This function is called to describe a query after it is prepared using a connection callback module.
+  """
+  def describe(query, _opts), do: query
 
-      {:error, code: code, message: message} ->
-        raise Exception, code: code, message: message
-    end
+  @doc """
+  This function is called to encode a query before it is executed using a connection callback module.
+  """
+  def encode(query, _, _) do
+    %{drop_all: drop_all, schema: schema, drop_attr: drop_attr} = query
+    %Operation{drop_all: drop_all, schema: schema, drop_attr: drop_attr}
   end
 
-  defp operation_commit(conn, operation) do
-    operation_processed =
-      operation
-      |> Map.put_new(:drop_all, false)
-      |> Map.put_new(:drop_attr, "")
-      |> Map.put_new(:schema, "")
-
-    exec = fn conn ->
-      operation = %OperationStatement{
-        drop_all: operation_processed.drop_all,
-        drop_attr: operation_processed.drop_attr,
-        schema: operation_processed.schema
-      }
-
-      case DBConnection.execute(conn, operation, %{}) do
-        {:ok, resp} -> resp
-        other -> other
-      end
-    end
-
-    # Response.transform(DBConnection.run(conn, exec, run_opts()))
-    DBConnection.run(conn, exec, run_opts())
-  end
-
-  defp run_opts do
-    [pool: ExDgraph.config(:pool)]
+  @doc """
+  This function is called to parse a query term before it is prepared using a connection callback module.
+  """
+  def parse(%{drop_attr: drop_attr, schema: schema, drop_all: _} = query, _opts) do
+    %Operation{
+      query
+      | drop_attr: IO.iodata_to_binary(drop_attr),
+        schema: IO.iodata_to_binary(schema)
+    }
   end
 end

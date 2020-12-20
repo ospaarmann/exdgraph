@@ -1,13 +1,10 @@
 defmodule ApplicationTest do
   use ExUnit.Case
 
-  test "Make sure the application is running" do
-    res = Application.ensure_started(:ex_dgraph)
-    assert res == :ok
-    cnf = ExDgraph.Utils.default_config()
-    {state, {message, _}} = ExDgraph.Application.start(%{}, cnf)
-    assert state == :error
-    assert message == :already_started
+  test "start/2 starts the application" do
+    {status, pid} = ExDgraph.Application.start(nil, [])
+    assert status == :ok
+    assert Process.alive?(pid)
   end
 
   test "stop/1 returns :ok" do

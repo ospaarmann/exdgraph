@@ -80,166 +80,123 @@ defmodule MutationTest do
   """
 
   setup do
-    conn = ExDgraph.conn()
-    drop_all()
-    import_starwars_sample()
-
-    on_exit(fn ->
-      # close channel ?
-      :ok
-    end)
+    {:ok, conn} = ExDgraph.start_link()
+    ExDgraph.alter(conn, %{drop_all: true})
+    import_starwars_sample(conn)
 
     [conn: conn]
   end
 
-  test "mutation/2 returns {:ok, mutation_msg} for correct mutation", %{conn: conn} do
-    {status, mutation_msg} = ExDgraph.mutation(conn, starwars_creation_mutation())
-    assert status == :ok
-    assert mutation_msg.context.aborted == false
+  describe "mutate/3" do
+    test "it returns {:ok, %Mutation{}, %MutationResult{}} for correct mutation", %{
+      conn: conn
+    } do
+      {status, _mutation, result} = ExDgraph.mutate(conn, starwars_creation_mutation())
+      assert status == :ok
+      assert result.txn_context.aborted == false
+    end
+
+    test "it returns {:error, error} for incorrect mutation", %{conn: conn} do
+      {status, error} = ExDgraph.mutate(conn, "wrong")
+      assert status == :error
+      assert error.code == 2
+    end
+
+    test "it writes the data to Dgraph", %{
+      conn: conn
+    } do
+      {status, _mutation, result} = ExDgraph.mutate(conn, @map_insert_mutation)
+      assert status == :ok
+      assert result.txn_context.aborted == false
+      query_msg = ExDgraph.query!(conn, @map_insert_check_query)
+      res = query_msg.data
+      people = res[:people]
+      alice = List.first(people)
+      assert alice[:name] == "Alice"
+      betty = List.first(alice[:friends])
+      assert betty[:name] == "Betty"
+    end
+
+    test "it returns result with uids", %{conn: conn} do
+      {status, _mutation, result} = ExDgraph.mutate(conn, @map_insert_mutation)
+      assert status == :ok
+      assert is_map(result.data)
+      mutation_alice = result.data
+      mutation_betty = List.first(mutation_alice[:friends])
+      query_msg = ExDgraph.query!(conn, @map_insert_check_query)
+      query_people = query_msg.data[:people]
+      query_alice = List.first(query_people)
+      query_betty = List.first(query_alice[:friends])
+      assert mutation_alice[:uid] == query_alice[:uid]
+      assert mutation_betty[:uid] == query_betty[:uid]
+    end
+
+    test "it updates a node if a uid is present and returns the uid again", %{conn: conn} do
+      user = %{name: "bob", occupation: "dev"}
+      {:ok, _mutation, result} = ExDgraph.mutate(conn, user)
+
+      other_mutation = %{
+        uid: result.data.uid,
+        friends: [%{name: "Paul", occupation: "diver"}, %{name: "Lisa", gender: "female"}]
+      }
+
+      {:ok, _mutation, result2} = ExDgraph.mutate(conn, other_mutation)
+      assert result.data.uid == result2.data.uid
+    end
   end
 
-  test "mutation/2 returns {:error, error} for incorrect mutation", %{conn: conn} do
-    {status, error} = ExDgraph.mutation(conn, "wrong")
-    assert status == :error
-    assert error[:code] == 2
-  end
+  describe "mutate!/3" do
+    test "it returns %MutationResult{} for correct mutation", %{
+      conn: conn
+    } do
+      result = ExDgraph.mutate!(conn, starwars_creation_mutation())
+      assert result.txn_context.aborted == false
+    end
 
-  # TODO: Take care of updates via uid
-  test "set_map/2 returns {:ok, mutation_msg} for correct mutation", %{conn: conn} do
-    {status, mutation_msg} = ExDgraph.set_map(conn, @map_insert_mutation)
-    assert status == :ok
-    assert mutation_msg.context.aborted == false
-    query_msg = ExDgraph.Query.query!(conn, @map_insert_check_query)
-    res = query_msg.result
-    people = res[:people]
-    alice = List.first(people)
-    assert alice[:name] == "Alice"
-    betty = List.first(alice[:friends])
-    assert betty[:name] == "Betty"
-  end
+    test "it raises ExDgraph.Error for incorrect mutation", %{conn: conn} do
+      assert_raise(ExDgraph.Error, fn ->
+        ExDgraph.mutate!(conn, "wrong")
+      end)
+    end
 
-  test "set_map!/2 returns mutation_message", %{conn: conn} do
-    mutation_msg = ExDgraph.set_map!(conn, @map_insert_mutation)
-    assert mutation_msg.context.aborted == false
-    query_msg = ExDgraph.Query.query!(conn, @map_insert_check_query)
-    res = query_msg.result
-    people = res[:people]
-    alice = List.first(people)
-    assert alice[:name] == "Alice"
-    betty = List.first(alice[:friends])
-    assert betty[:name] == "Betty"
-  end
+    test "it writes the data to Dgraph", %{
+      conn: conn
+    } do
+      result = ExDgraph.mutate!(conn, @map_insert_mutation)
+      assert result.txn_context.aborted == false
+      query_msg = ExDgraph.query!(conn, @map_insert_check_query)
+      res = query_msg.data
+      people = res[:people]
+      alice = List.first(people)
+      assert alice[:name] == "Alice"
+      betty = List.first(alice[:friends])
+      assert betty[:name] == "Betty"
+    end
 
-  test "set_map/2 returns result with uids", %{conn: conn} do
-    {status, mutation_msg} = ExDgraph.set_map(conn, @map_insert_mutation)
-    assert status == :ok
-    assert is_map(mutation_msg.result)
-    mutation_alice = mutation_msg.result
-    mutation_betty = List.first(mutation_alice[:friends])
-    query_msg = ExDgraph.Query.query!(conn, @map_insert_check_query)
-    query_people = query_msg.result[:people]
-    query_alice = List.first(query_people)
-    query_betty = List.first(query_alice[:friends])
-    assert mutation_alice[:uid] == query_alice[:uid]
-    assert mutation_betty[:uid] == query_betty[:uid]
-  end
+    test "it returns result with uids", %{conn: conn} do
+      result = ExDgraph.mutate!(conn, @map_insert_mutation)
+      assert is_map(result.data)
+      mutation_alice = result.data
+      mutation_betty = List.first(mutation_alice[:friends])
+      query_msg = ExDgraph.query!(conn, @map_insert_check_query)
+      query_people = query_msg.data[:people]
+      query_alice = List.first(query_people)
+      query_betty = List.first(query_alice[:friends])
+      assert mutation_alice[:uid] == query_alice[:uid]
+      assert mutation_betty[:uid] == query_betty[:uid]
+    end
 
-  test "set_map!/2 returns result with uids", %{conn: conn} do
-    mutation_msg = ExDgraph.set_map!(conn, @map_insert_mutation)
-    assert is_map(mutation_msg.result)
-    mutation_alice = mutation_msg.result
-    mutation_betty = List.first(mutation_alice[:friends])
-    query_msg = ExDgraph.Query.query!(conn, @map_insert_check_query)
-    query_people = query_msg.result[:people]
-    query_alice = List.first(query_people)
-    query_betty = List.first(query_alice[:friends])
-    assert mutation_alice[:uid] == query_alice[:uid]
-    assert mutation_betty[:uid] == query_betty[:uid]
-  end
+    test "it updates a node if a uid is present and returns the uid again", %{conn: conn} do
+      user = %{name: "bob", occupation: "dev"}
+      result = ExDgraph.mutate!(conn, user)
 
-  # TODO: Take care of updates via uid
-  test "set_map/2 struct returns {:ok, mutation_msg} for correct mutation", %{conn: conn} do
-    {status, mutation_msg} = ExDgraph.set_struct(conn, @struct_insert_mutation)
-    assert status == :ok
-    assert mutation_msg.context.aborted == false
-    query_msg = ExDgraph.Query.query!(conn, @struct_insert_check_query)
-    res = query_msg.result
-    people = res[:people]
-    alice = List.first(people)
-    assert alice[:name] == "Alice"
-    betty = List.first(alice[:dogs])
-    assert betty[:name] == "Betty"
-    some_map = List.first(alice[:some_map])
-    assert some_map.some == "value"
-    bob = List.first(some_map[:map_owner])
-    assert bob.name == "Bob"
-  end
+      other_mutation = %{
+        uid: result.data.uid,
+        friends: [%{name: "Paul", occupation: "diver"}, %{name: "Lisa", gender: "female"}]
+      }
 
-  test "set_map!/2 struct returns mutation_message", %{conn: conn} do
-    mutation_msg = ExDgraph.set_struct!(conn, @struct_insert_mutation)
-    assert mutation_msg.context.aborted == false
-    query_msg = ExDgraph.Query.query!(conn, @struct_insert_check_query)
-    res = query_msg.result
-    people = res[:people]
-    alice = List.first(people)
-    assert alice[:name] == "Alice"
-    betty = List.first(alice[:dogs])
-    assert betty[:name] == "Betty"
-    some_map = List.first(alice[:some_map])
-    assert some_map.some == "value"
-    bob = List.first(some_map[:map_owner])
-    assert bob.name == "Bob"
-  end
-
-  test "set_map/2 struct returns result with uids", %{conn: conn} do
-    {status, mutation_msg} = ExDgraph.set_struct(conn, @struct_insert_mutation)
-    assert status == :ok
-    assert is_map(mutation_msg.result)
-    mutation_alice = mutation_msg.result
-    mutation_betty = List.first(mutation_alice[:dogs])
-    mutation_some_map = mutation_alice[:some_map]
-    mutation_bob = mutation_some_map[:map_owner]
-    query_msg = ExDgraph.Query.query!(conn, @struct_insert_check_query)
-    query_people = query_msg.result[:people]
-    query_alice = List.first(query_people)
-    query_betty = List.first(query_alice[:dogs])
-    query_some_map = List.first(query_alice[:some_map])
-    query_bob = List.first(query_some_map[:map_owner])
-    assert mutation_alice[:uid] == query_alice[:uid]
-    assert mutation_betty[:uid] == query_betty[:uid]
-    assert mutation_some_map[:uid] == query_some_map[:uid]
-    assert mutation_bob[:uid] == query_bob[:uid]
-  end
-
-  test "set_map!/2 struct returns result with uids", %{conn: conn} do
-    mutation_msg = ExDgraph.set_struct!(conn, @struct_insert_mutation)
-    assert is_map(mutation_msg.result)
-    mutation_alice = mutation_msg.result
-    mutation_betty = List.first(mutation_alice[:dogs])
-    mutation_some_map = mutation_alice[:some_map]
-    mutation_bob = mutation_some_map[:map_owner]
-    query_msg = ExDgraph.Query.query!(conn, @struct_insert_check_query)
-    query_people = query_msg.result[:people]
-    query_alice = List.first(query_people)
-    query_betty = List.first(query_alice[:dogs])
-    query_some_map = List.first(query_alice[:some_map])
-    query_bob = List.first(query_some_map[:map_owner])
-    assert mutation_alice[:uid] == query_alice[:uid]
-    assert mutation_betty[:uid] == query_betty[:uid]
-    assert mutation_some_map[:uid] == query_some_map[:uid]
-    assert mutation_bob[:uid] == query_bob[:uid]
-  end
-
-  test "set_map/2 updates a node if a uid is present and returns the uid again", %{conn: conn} do
-    user = %{name: "bob", occupation: "dev"}
-    {:ok, res} = ExDgraph.set_map(conn, user)
-
-    other_mutation = %{
-      uid: res.result.uid,
-      friends: [%{name: "Paul", occupation: "diver"}, %{name: "Lisa", gender: "female"}]
-    }
-
-    {:ok, res2} = ExDgraph.set_map(conn, other_mutation)
-    assert res.result.uid == res2.result.uid
+      result2 = ExDgraph.mutate!(conn, other_mutation)
+      assert result.data.uid == result2.data.uid
+    end
   end
 end
